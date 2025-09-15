@@ -10,7 +10,7 @@ import java.util.List;
 public interface ProcessRepository extends JpaRepository<ProcessEntity, String> {  // 공정아이디가 일치하는 데이터 검색 기능이 포함
 
     // 공정아이디(processId)와 일치하는 데이터 검색
-    List<ProcessEntity> findByProcessId(String processId);
+    List<ProcessEntity> findByProcessIdContaining(String processId);
 
     // 공정명(processNm)을 포함하는(Containing) 데이터 검색
     List<ProcessEntity> findByProcessNmContaining(String processNm);

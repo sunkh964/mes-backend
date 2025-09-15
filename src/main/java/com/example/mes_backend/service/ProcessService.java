@@ -25,7 +25,7 @@ public class ProcessService {
 
     // 2. 공정 ID만 있을 경우
     public List<ProcessDto> getAllSearchProcessId(String processId) {
-        return processRepository.findByProcessId(processId)
+        return processRepository.findByProcessIdContaining(processId)
                 .stream()
                 .map(ProcessDto::fromEntity)
                 .toList();
