@@ -45,6 +45,7 @@ public class BlockPlanDto {
 
     }
 
+    // Entity → DTO 변환
     public static BlockPlanDto fromEntity(BlockPlanEntity entity) {
         BlockPlanDto dto = new BlockPlanDto();
         dto.setBlockPlanId(entity.getBlockPlanId());
