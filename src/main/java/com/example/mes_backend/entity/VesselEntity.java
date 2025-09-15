@@ -12,11 +12,15 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "vessels")
 @Data
-public class Vessel {
+public class VesselEntity {
 
     @Id
     @Column(name = "vessel_id", length = 20, nullable = false)
     private String vesselId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private ProjectEntity projectEntity;
 
     @Column(name = "vessel_nm", length = 50, nullable = false)
     private String vesselName;
@@ -48,9 +52,6 @@ public class Vessel {
     @Column(name = "actual_delivery_date")
     private LocalDate actualDeliveryDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
 
     @Column(name = "remark", length = 255)
     private String remark;
