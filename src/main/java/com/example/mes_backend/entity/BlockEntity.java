@@ -2,9 +2,6 @@ package com.example.mes_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "blocks")
-public class Block {
+public class BlockEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

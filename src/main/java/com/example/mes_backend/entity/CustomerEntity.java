@@ -2,8 +2,6 @@ package com.example.mes_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "customers")
-public class Customer {
+public class CustomerEntity {
 
     @Id
     @Column(name = "customer_id", length = 20, nullable = false)
