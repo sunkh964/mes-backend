@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.sql.Date;
+
 @SpringBootApplication
 public class MesBackendApplication {
 
@@ -24,9 +26,14 @@ public class MesBackendApplication {
 			if (employeeRepository.findByEmployeeId("worker01").isEmpty()) {
 				Employee worker = new Employee();
 				worker.setEmployeeId("worker01");
-				worker.setPassword(passwordEncoder.encode("1234")); // 비밀번호 암호화
+				worker.setEmployeeNm("김작업");
+
+				// 필수 필드들 설정
+				worker.setDepartmentId(1);              // 예: 1번 부서 (존재하는 부서 ID여야 함)
+				worker.setPositionId(1);                // 예: 1번 직책 (존재하는 포지션 ID여야 함)
+				worker.setHireDate(Date.valueOf("2023-01-01")); // java.sql.Date 로 설정
+				worker.setPassword(passwordEncoder.encode("1234"));
 				worker.setRole("WORKER");
-				worker.setEmployeeNm("김작업"); // 이 라인을 추가하여 직원 이름을 설정
 
 				employeeRepository.save(worker);
 				System.out.println("테스트 계정 'worker01'이 생성되었습니다.");
