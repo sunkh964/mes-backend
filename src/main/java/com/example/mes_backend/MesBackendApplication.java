@@ -38,6 +38,22 @@ public class MesBackendApplication {
 				employeeRepository.save(worker);
 				System.out.println("테스트 계정 'worker01'이 생성되었습니다.");
 			}
+
+            if (employeeRepository.findByEmployeeId("admin01").isEmpty()) {
+                Employee worker = new Employee();
+                worker.setEmployeeId("admin01");
+                worker.setEmployeeNm("이검사");
+
+                // 필수 필드들 설정
+                worker.setDepartmentId(1);              // 예: 1번 부서 (존재하는 부서 ID여야 함)
+                worker.setPositionId(1);                // 예: 1번 직책 (존재하는 포지션 ID여야 함)
+                worker.setHireDate(Date.valueOf("2023-01-01")); // java.sql.Date 로 설정
+                worker.setPassword(passwordEncoder.encode("1234"));
+                worker.setRole("ADMIN");
+
+                employeeRepository.save(worker);
+                System.out.println("테스트 계정 'admin01'이 생성되었습니다.");
+            }
 		};
 	}
 
