@@ -90,4 +90,20 @@ public class ProcessService {
                 .map(ProcessDto::fromEntity)
                 .orElse(null);
     }
+
+    // ============= 등록 =================
+    public ProcessDto create(ProcessDto dto) {
+        if (processRepository.existsById(dto.getProcessId())) {
+            throw new IllegalArgumentException("이미 존재하는 공정 ID입니다: " + dto.getProcessId());
+        }
+        return ProcessDto.fromEntity(processRepository.save(dto.toEntity()));
+    }
+
+    // ============= 삭제 =================
+    public void delete(String processId) {
+        if (!processRepository.existsById(processId)) {
+            throw new IllegalArgumentException("삭제할 공정이 존재하지 않습니다: " + processId);
+        }
+        processRepository.deleteById(processId);
+    }
 }

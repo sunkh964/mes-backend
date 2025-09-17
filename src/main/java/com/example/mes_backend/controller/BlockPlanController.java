@@ -30,14 +30,14 @@ public class BlockPlanController {
     // 조건 검색
     @GetMapping("/search")
     public List<BlockPlanDto> searchBlockPlans(
-            @RequestParam(required = false) Integer blockId,
+            @RequestParam(required = false) String blockId,
             @RequestParam(required = false) String processId,
             @RequestParam(required = false) String vesselId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) Integer status
+            @RequestParam(required = false) String status
     ) {
         return blockPlanService.search(blockId, processId, vesselId, startDate, endDate, status);
     }
