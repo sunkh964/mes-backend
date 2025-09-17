@@ -3,11 +3,13 @@ package com.example.mes_backend.service;
 import com.example.mes_backend.dto.QualityControlDto;
 import com.example.mes_backend.entity.QualityControlEntity;
 import com.example.mes_backend.repository.QualityControlRepository;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,5 +69,46 @@ public class QualityControlService {
         return qualityControlRepository.findById(qualityControlId)
                 .map(QualityControlDto::fromEntity)
                 .orElse(null);
+
+    }
+
+    public List<QualityControlDto> search(String purchaseOrderId,
+                                          Integer materialId,
+                                          LocalDateTime inspectionDateFrom,
+                                          LocalDateTime inspectionDateTo,
+                                          String result) {
+
+        return qualityControlRepository.findAll((root, query, cb) -> {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    // 발주 ID
+                    if (purchaseOrderId != null && !purchaseOrderId.isEmpty()) {
+                        predicates.add(cb.equal(root.get("purchaseOrderId"), purchaseOrderId));
+                    }
+
+                    // 자재 ID
+                    if (materialId != null) {
+                        predicates.add(cb.equal(root.get("materialId"), materialId));
+                    }
+
+                    // 검사일시 From
+                    if (inspectionDateFrom != null) {
+                        predicates.add(cb.greaterThanOrEqualTo(root.get("inspectionDate"), inspectionDateFrom));
+                    }
+
+                    // 검사일시 To
+                    if (inspectionDateTo != null) {
+                        predicates.add(cb.lessThanOrEqualTo(root.get("inspectionDate"), inspectionDateTo));
+                    }
+
+                    // 검사 결과
+                    if (result != null && !result.isEmpty()) {
+                        predicates.add(cb.equal(root.get("result"), result));
+                    }
+
+                    return cb.and(predicates.toArray(new Predicate[0]));
+                }).stream()
+                .map(QualityControlDto::fromEntity)
+                .toList();
     }
 }

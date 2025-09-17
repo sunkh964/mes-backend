@@ -26,7 +26,7 @@ public class ProcessDto {
         processEntity.setProcessId(this.processId);
         processEntity.setProcessNm(this.processNm);
         processEntity.setProcessInfo(this.processInfo);
-        processEntity.setProcessSequence(this.processSequence);
+        processEntity.setProcessSequence(this.processSequence != null ? this.processSequence : 0); // 기본값 0
         processEntity.setStandardTime(this.standardTime);
         processEntity.setIsActive(this.isActive);
         processEntity.setRemark(this.remark);

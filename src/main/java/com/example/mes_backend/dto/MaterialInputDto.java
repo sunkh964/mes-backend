@@ -1,6 +1,7 @@
 package com.example.mes_backend.dto;
 
 import com.example.mes_backend.entity.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,8 @@ public class MaterialInputDto {
     private String warehouse;
     private String location;
     private String employeeId;
-    private LocalDateTime inputDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime inputDate;   // 사용일시
     private String remark;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
