@@ -64,11 +64,14 @@ public class QualityControlEntity {
 
     // 생성일
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     // 수정일
     @CreationTimestamp
-    @Column(name = "updated_at", insertable = false, nullable = false)
+    @Column(name = "updated_at", insertable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "order_quantity", nullable = false)
+    private Integer order_quantity;
 }
