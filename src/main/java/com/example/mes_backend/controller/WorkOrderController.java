@@ -29,27 +29,28 @@ public class WorkOrderController {
     // 기본 조건 검색
     @GetMapping("/search")
     public List<WorkOrderDto> searchWorkOrders(
+            @RequestParam(required = false) Integer workOrderId,
             @RequestParam(required = false) String processId,
             @RequestParam(required = false) Integer blockId,
             @RequestParam(required = false) String workCenterId,
-            @RequestParam(required = false) String currentStatus
-    ) {
-        return workOrderService.search(processId, blockId, workCenterId, currentStatus);
-    }
-
-    // 상세 조건 검색 (기간, 우선순위 등)
-    @GetMapping("/searchDetail")
-    public List<WorkOrderDto> searchWorkOrdersDetail(
-            @RequestParam(required = false) String processId,
-            @RequestParam(required = false) Integer blockId,
-            @RequestParam(required = false) String workCenterId,
-            @RequestParam(required = false) String currentStatus,
             @RequestParam(required = false) Integer priority,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedStartTime,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedEndTime
+            @RequestParam(required = false) String currentStatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedStartTimeFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedStartTimeTo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedEndTimeFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime plannedEndTimeTo
     ) {
-        return workOrderService.searchDetail(processId, blockId, workCenterId, currentStatus, priority,
-                plannedStartTime != null ? plannedStartTime.toString() : null,
-                plannedEndTime != null ? plannedEndTime.toString() : null);
+        return workOrderService.search(
+                workOrderId,
+                processId,
+                blockId,
+                workCenterId,
+                plannedStartTimeFrom,
+                plannedStartTimeTo,
+                plannedEndTimeFrom,
+                plannedEndTimeTo,
+                priority,
+                currentStatus
+        );
     }
 }

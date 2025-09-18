@@ -39,7 +39,7 @@ public class QualityControlController {
         return qualityControlService.getById(qualityControlId);
     }
 
-    // 조건 검색
+    /** 조건 검색 */
     @GetMapping("/search")
     public List<QualityControlDto> search(
             @RequestParam(required = false) String purchaseOrderId,
@@ -50,7 +50,7 @@ public class QualityControlController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inspectionDateTo,
             @RequestParam(required = false) String result
     ) {
-        log.info("QualityControl search called with purchaseOrderId={}, materialId={}, inspectionDateFrom={}, inspectionDateTo={}, result={}",
+        log.info("QualityControl 조건 검색: purchaseOrderId={}, materialId={}, from={}, to={}, result={}",
                 purchaseOrderId, materialId, inspectionDateFrom, inspectionDateTo, result);
 
         return qualityControlService.search(purchaseOrderId, materialId, inspectionDateFrom, inspectionDateTo, result);

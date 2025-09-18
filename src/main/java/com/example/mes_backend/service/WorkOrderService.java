@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,72 +26,81 @@ public class WorkOrderService {
                 .toList();
     }
 
-    // 조건 검색 (기본 검색)
-    public List<WorkOrderDto> search(String processId, Integer blockId, String workCenterId, String currentStatus) {
-        return workOrderRepository.findAll((root, query, cb) -> {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    // 공정 ID
-                    if (processId != null && !processId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("process").get("processId"), processId));
-                    }
-
-                    // 블록 ID
-                    if (blockId != null) {
-                        predicates.add(cb.equal(root.get("block").get("blockId"), blockId));
-                    }
-
-                    // 작업장 ID
-                    if (workCenterId != null && !workCenterId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("workCenter").get("workCenterId"), workCenterId));
-                    }
-
-                    // 현재 상태
-                    if (currentStatus != null && !currentStatus.isEmpty()) {
-                        predicates.add(cb.equal(root.get("currentStatus"), currentStatus));
-                    }
-
-                    return cb.and(predicates.toArray(new Predicate[0]));
-                }).stream()
-                .map(WorkOrderDto::fromEntity)
-                .toList();
+    // LIKE 패턴 유틸
+    private String likePattern(String s) {
+        if (s == null) return null;
+        String escaped = s.trim()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+        return "%" + escaped.toLowerCase() + "%";
     }
 
-    // 상세 검색 (추가 옵션 검색)
-    public List<WorkOrderDto> searchDetail(String processId, Integer blockId, String workCenterId, String currentStatus,
-                                           Integer priority, String plannedStartTime, String plannedEndTime) {
+    // 조건 검색
+    public List<WorkOrderDto> search(Integer workOrderId,
+                                     String processId,
+                                     Integer blockId,
+                                     String workCenterId,
+                                     LocalDateTime plannedStartTimeFrom,
+                                     LocalDateTime plannedStartTimeTo,
+                                     LocalDateTime plannedEndTimeFrom,
+                                     LocalDateTime plannedEndTimeTo,
+                                     Integer priority,
+                                     String currentStatus) {
+
         return workOrderRepository.findAll((root, query, cb) -> {
-                    List<Predicate> predicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
 
-                    // 기본 조건 (1~2순위)
-                    if (processId != null && !processId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("process").get("processId"), processId));
-                    }
-                    if (blockId != null) {
-                        predicates.add(cb.equal(root.get("block").get("blockId"), blockId));
-                    }
-                    if (workCenterId != null && !workCenterId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("workCenter").get("workCenterId"), workCenterId));
-                    }
-                    if (currentStatus != null && !currentStatus.isEmpty()) {
-                        predicates.add(cb.equal(root.get("currentStatus"), currentStatus));
-                    }
+            // 작업지시 ID
+            if (workOrderId != null) {
+                predicates.add(cb.equal(root.get("workOrderId"), workOrderId));
+            }
 
-                    // 상세 조건
-                    if (priority != null) {
-                        predicates.add(cb.equal(root.get("priority"), priority));
-                    }
-                    if (plannedStartTime != null && !plannedStartTime.isEmpty()) {
-                        predicates.add(cb.greaterThanOrEqualTo(root.get("plannedStartTime"), plannedStartTime));
-                    }
-                    if (plannedEndTime != null && !plannedEndTime.isEmpty()) {
-                        predicates.add(cb.lessThanOrEqualTo(root.get("plannedEndTime"), plannedEndTime));
-                    }
+            // 공정 ID (부분검색)
+            if (processId != null && !processId.isBlank()) {
+                String p = likePattern(processId);
+                predicates.add(cb.like(cb.lower(root.get("process").get("processId").as(String.class)), p, '\\'));
+            }
 
-                    return cb.and(predicates.toArray(new Predicate[0]));
-                }).stream()
-                .map(WorkOrderDto::fromEntity)
-                .toList();
+            // 블록 ID
+            if (blockId != null) {
+                predicates.add(cb.equal(root.get("block").get("blockId"), blockId));
+            }
+
+            // 작업장 ID (부분검색)
+            if (workCenterId != null && !workCenterId.isBlank()) {
+                String p = likePattern(workCenterId);
+                predicates.add(cb.like(cb.lower(root.get("workCenter").get("workCenterId").as(String.class)), p, '\\'));
+            }
+
+            // 계획 시작일
+            if (plannedStartTimeFrom != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.<LocalDateTime>get("plannedStartTime"), plannedStartTimeFrom));
+            }
+            if (plannedStartTimeTo != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.<LocalDateTime>get("plannedStartTime"), plannedStartTimeTo));
+            }
+
+            // 계획 종료일
+            if (plannedEndTimeFrom != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.<LocalDateTime>get("plannedEndTime"), plannedEndTimeFrom));
+            }
+            if (plannedEndTimeTo != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.<LocalDateTime>get("plannedEndTime"), plannedEndTimeTo));
+            }
+
+            // 우선순위
+            if (priority != null) {
+                predicates.add(cb.equal(root.get("priority"), priority));
+            }
+
+            // 현재 상태 (부분검색)
+            if (currentStatus != null && !currentStatus.isBlank()) {
+                String p = likePattern(currentStatus);
+                predicates.add(cb.like(cb.lower(root.get("currentStatus").as(String.class)), p, '\\'));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        }).stream().map(WorkOrderDto::fromEntity).toList();
     }
-
 }

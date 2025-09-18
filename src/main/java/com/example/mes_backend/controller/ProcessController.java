@@ -72,4 +72,20 @@ public class ProcessController {
         return processService.getProcess(process);
     }
 
+
+
+    // ============= 등록 =================
+    @PostMapping
+    public ProcessDto createProcess(@RequestBody ProcessDto dto) {
+        return processService.create(dto);
+    }
+
+    // ============= 삭제 =================
+    // 삭제
+    @DeleteMapping("/{processId}")
+    public void deleteProcess(@PathVariable("processId") String processId) {
+        processService.delete(processId);
+    }
+
+
 }

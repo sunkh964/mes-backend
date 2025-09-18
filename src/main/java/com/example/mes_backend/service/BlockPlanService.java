@@ -29,49 +29,64 @@ public class BlockPlanService {
                 .toList();
     }
 
-    // 조건 검색 Specification(동적 쿼리 작성 패턴)
-    public List<BlockPlanDto> search(Integer blockId, String processId, String vesselId,
-                                     LocalDate startDate, LocalDate endDate, Integer status) {
+    // LIKE 패턴 유틸 (소문자 변환 + escape 처리)
+    private String likePattern(String s) {
+        if (s == null) return null;
+        String escaped = s.trim()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+        return "%" + escaped.toLowerCase() + "%";
+    }
+
+    // 조건 검색 (모든 조건을 부분검색)
+    public List<BlockPlanDto> search(String blockId,
+                                     String processId,
+                                     String vesselId,
+                                     LocalDate startDate,
+                                     LocalDate endDate,
+                                     String status) {
 
         return blockPlanRepository.findAll((root, query, cb) -> {
-                    // Predicate는 Criteria API에서 WHERE 조건을 표현하는 객체
-                    //여러 개의 조건을 List<Predicate>로 모아두고 → cb.and()로 합쳐서 반환
-                    List<Predicate> predicates = new ArrayList<>(); // WHERE 조건들을 담는 리스트
+                    List<Predicate> predicates = new ArrayList<>();
 
-                    // 블록 ID 조건
-                    if (blockId != null) {
-                        predicates.add(cb.equal(root.get("blockEntity").get("blockId"), blockId));
+                    // 블록 ID (부분검색)
+                    if (blockId != null && !blockId.isBlank()) {
+                        String p = likePattern(blockId);
+                        predicates.add(cb.like(cb.lower(root.get("block").get("blockId").as(String.class)), p, '\\'));
                     }
 
-                    // 공정 ID 조건
-                    if (processId != null && !processId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("process").get("processId"), processId));
+                    // 공정 ID (부분검색)
+                    if (processId != null && !processId.isBlank()) {
+                        String p = likePattern(processId);
+                        predicates.add(cb.like(cb.lower(root.get("process").get("processId").as(String.class)), p, '\\'));
                     }
 
-                    // 선박 ID 조건
-                    if (vesselId != null && !vesselId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("vesselEntity").get("vesselId"), vesselId));
+                    // 선박 ID (부분검색)
+                    if (vesselId != null && !vesselId.isBlank()) {
+                        String p = likePattern(vesselId);
+                        predicates.add(cb.like(cb.lower(root.get("vessel").get("vesselId").as(String.class)), p, '\\'));
                     }
 
-                    // 시작일 조건 (start_date >= 파라미터)
+                    // 시작일 (>=)
                     if (startDate != null) {
                         predicates.add(cb.greaterThanOrEqualTo(root.get("startDate"), startDate));
                     }
 
-                    // 종료일 조건 (end_date <= 파라미터)
+                    // 종료일 (<=)
                     if (endDate != null) {
                         predicates.add(cb.lessThanOrEqualTo(root.get("endDate"), endDate));
                     }
 
-                    // 상태 조건
-                    if (status != null) {
-                        predicates.add(cb.equal(root.get("status"), status));
+                    // 상태 (부분검색)
+                    if (status != null && !status.isBlank()) {
+                        String p = likePattern(status);
+                        predicates.add(cb.like(cb.lower(root.get("status").as(String.class)), p, '\\'));
                     }
 
-                    // AND 조건으로 조합
                     return cb.and(predicates.toArray(new Predicate[0]));
                 }).stream()
-                .map(BlockPlanDto::fromEntity) // Entity → DTO 변환
+                .map(BlockPlanDto::fromEntity)
                 .toList();
     }
 
