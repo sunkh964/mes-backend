@@ -3,10 +3,7 @@ package com.example.mes_backend.controller;
 import com.example.mes_backend.dto.WorkCenterDto;
 import com.example.mes_backend.service.WorkCenterService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -68,4 +65,17 @@ public class WorkCenterController {
             return workCenterService.getAllSearch();
         }
     }
+
+    // 등록
+    @PostMapping
+    public WorkCenterDto createWorkCenter(@RequestBody WorkCenterDto dto){
+        return workCenterService.create(dto);
+    }
+
+    // 삭제
+    @DeleteMapping("/{workCenterId}")
+    public void deleteWorkCenter(@PathVariable("workCenterId") String workCenterId){
+        workCenterService.delete(workCenterId);
+    }
+
 }

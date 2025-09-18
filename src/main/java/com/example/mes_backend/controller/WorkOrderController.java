@@ -4,10 +4,7 @@ import com.example.mes_backend.dto.WorkOrderDto;
 import com.example.mes_backend.service.WorkOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,5 +49,26 @@ public class WorkOrderController {
                 priority,
                 currentStatus
         );
+    }
+
+    // 등록
+    @PostMapping
+    public WorkOrderDto createWorkOrder(@RequestBody WorkOrderDto dto) {
+        return workOrderService.create(dto);
+    }
+
+    //  수정
+    @PutMapping("/{workOrderId}")
+    public WorkOrderDto updateWorkOrder(
+            @PathVariable int workOrderId,
+            @RequestBody WorkOrderDto dto
+    ) {
+        return workOrderService.update(workOrderId, dto);
+    }
+
+    //  삭제
+    @DeleteMapping("/{workOrderId}")
+    public void deleteWorkOrder(@PathVariable int workOrderId) {
+        workOrderService.delete(workOrderId);
     }
 }

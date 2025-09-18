@@ -1,14 +1,13 @@
 package com.example.mes_backend.controller;
 
 import com.example.mes_backend.dto.BlockPlanDto;
+import com.example.mes_backend.dto.ProcessDto;
 import com.example.mes_backend.dto.QualityControlDto;
+import com.example.mes_backend.dto.WorkCenterDto;
 import com.example.mes_backend.service.BlockPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,4 +40,30 @@ public class BlockPlanController {
     ) {
         return blockPlanService.search(blockId, processId, vesselId, startDate, endDate, status);
     }
+
+    // ============= 등록 =================
+    @PostMapping
+    public BlockPlanDto createBlockPlan(@RequestBody BlockPlanDto dto) {
+
+        return blockPlanService.create(dto);
+    }
+
+    // ============= 삭제 =================
+    // 삭제
+    @DeleteMapping("/{blockPlanId}")
+    public void deleteBlockPlan(@PathVariable("blockPlanId") int blockPlanId) {
+
+        blockPlanService.delete(blockPlanId);
+    }
+
+    // 수정
+    @PutMapping("/{blockPlanId}")
+    public BlockPlanDto updateBlockPlan(
+            @PathVariable("blockPlanId") int blockPlanId,
+            @RequestBody BlockPlanDto dto) {
+        return blockPlanService.update(blockPlanId, dto);
+    }
+
+
+
 }

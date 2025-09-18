@@ -3,6 +3,7 @@ package com.example.mes_backend.dto;
 import com.example.mes_backend.entity.BlockPlanEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,8 +17,11 @@ public class BlockPlanDto {
     private Integer planQty;         // 계획 수량
 
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;     // 시작일
+
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;       // 종료일
 
     private Integer status;          // 상태값 (ex. 계획/진행/완료 등)
@@ -49,9 +53,16 @@ public class BlockPlanDto {
     public static BlockPlanDto fromEntity(BlockPlanEntity entity) {
         BlockPlanDto dto = new BlockPlanDto();
         dto.setBlockPlanId(entity.getBlockPlanId());
-        dto.setVesselId(entity.getVesselEntity().getVesselId());
-        dto.setProcessId(entity.getProcess().getProcessId());
-        dto.setBlockId(entity.getBlockEntity().getBlockId());
+        // Null-safe 처리
+        if (entity.getVesselEntity() != null) {
+            dto.setVesselId(entity.getVesselEntity().getVesselId());
+        }
+        if (entity.getProcess() != null) {
+            dto.setProcessId(entity.getProcess().getProcessId());
+        }
+        if (entity.getBlockEntity() != null) {
+            dto.setBlockId(entity.getBlockEntity().getBlockId());
+        }
         dto.setPlanQty(entity.getPlanQty());
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());

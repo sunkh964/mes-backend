@@ -102,4 +102,20 @@ public class WorkCenterService {
                 .map(WorkCenterDto::fromEntity).toList();
     }
 
+    // 등록
+    public WorkCenterDto create(WorkCenterDto dto) {
+        if(workCenterRepository.existsById(dto.getWorkCenterId())){
+            throw new IllegalArgumentException("이미 존재하는 작업장입니다." + dto.getWorkCenterId());
+        }
+        return WorkCenterDto.fromEntity(workCenterRepository.save(dto.toEntity()));
+    }
+
+    // ============= 삭제 =================
+    public void delete(String workCenterId) {
+        if (!workCenterRepository.existsById(workCenterId)) {
+            throw new IllegalArgumentException("삭제할 작업장이 존재하지 않습니다: " + workCenterId);
+        }
+        workCenterRepository.deleteById(workCenterId);
+    }
+
 }

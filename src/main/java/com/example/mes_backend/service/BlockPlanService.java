@@ -1,7 +1,15 @@
 package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.BlockPlanDto;
+import com.example.mes_backend.dto.ProcessDto;
+import com.example.mes_backend.entity.BlockEntity;
+import com.example.mes_backend.entity.BlockPlanEntity;
+import com.example.mes_backend.entity.ProcessEntity;
+import com.example.mes_backend.entity.VesselEntity;
 import com.example.mes_backend.repository.BlockPlanRepository;
+import com.example.mes_backend.repository.BlockRepository;
+import com.example.mes_backend.repository.ProcessRepository;
+import com.example.mes_backend.repository.VesselRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +27,9 @@ import jakarta.persistence.criteria.Predicate;
 public class BlockPlanService {
 
     private final BlockPlanRepository blockPlanRepository;
+    private final VesselRepository vesselRepository;
+    private final ProcessRepository processRepository;
+    private final BlockRepository blockRepository;
 
     // 전체 조회
     public List<BlockPlanDto> getAll() {
@@ -89,5 +100,69 @@ public class BlockPlanService {
                 .map(BlockPlanDto::fromEntity)
                 .toList();
     }
+
+    // ============= 등록 =================
+    public BlockPlanDto create(BlockPlanDto dto) {
+        BlockPlanEntity entity = dto.toEntity();
+
+        // 여기서 id가 null이면 신규이므로 existsById 검사하지 않음
+        if (dto.getBlockPlanId() != null) {
+            if (blockPlanRepository.existsById(dto.getBlockPlanId())) {
+                throw new IllegalArgumentException("이미 존재하는 블록 계획 ID입니다: " + dto.getBlockPlanId());
+            }
+        }
+
+        BlockPlanEntity saved = blockPlanRepository.save(entity);
+        return BlockPlanDto.fromEntity(saved);
+    }
+
+//    public BlockPlanDto create(BlockPlanDto dto) {
+//        if (blockPlanRepository.existsById(dto.getBlockPlanId())) {
+//            throw new IllegalArgumentException("이미 존재하는 블록 생산 계획입니다: " + dto.getBlockPlanId());
+//        }
+//        return BlockPlanDto.fromEntity(blockPlanRepository.save(dto.toEntity()));
+//    }
+
+    // ============= 삭제 =================
+    public void delete(int blockPlanId) {
+        if (!blockPlanRepository.existsById(blockPlanId)) {
+            throw new IllegalArgumentException("삭제할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId);
+        }
+        blockPlanRepository.deleteById(blockPlanId);
+    }
+
+    // 수정
+    @Transactional
+    public BlockPlanDto update(int blockPlanId, BlockPlanDto dto) {
+        return blockPlanRepository.findById(blockPlanId)
+                .map(entity -> {
+                    // FK 매핑된 엔티티 조회
+                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
+                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+
+                    ProcessEntity process = processRepository.findById(dto.getProcessId())
+                            .orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다: " + dto.getProcessId()));
+
+                    BlockEntity block = blockRepository.findById(dto.getBlockId())
+                            .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다: " + dto.getBlockId()));
+
+                    // 연관 엔티티 세팅
+                    entity.setVesselEntity(vessel);
+                    entity.setProcess(process);
+                    entity.setBlockEntity(block);
+
+                    // 나머지 일반 필드 세팅
+                    entity.setPlanQty(dto.getPlanQty());
+                    entity.setStatus(dto.getStatus());
+                    entity.setStartDate(dto.getStartDate());
+                    entity.setEndDate(dto.getEndDate());
+                    entity.setRemark(dto.getRemark());
+
+                    return BlockPlanDto.fromEntity(blockPlanRepository.save(entity));
+                })
+                .orElseThrow(() -> new IllegalArgumentException("수정할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId));
+    }
+
+
 
 }
