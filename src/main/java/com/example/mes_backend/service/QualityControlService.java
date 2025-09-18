@@ -73,16 +73,6 @@ public class QualityControlService {
 
     }
 
-    // 유틸: LIKE 패턴(%, _ 등 이스케이프) + 소문자 통일
-    private String likePattern(String s) {
-        if (s == null) return null;
-        String escaped = s.trim()
-                .replace("\\", "\\\\")
-                .replace("%", "\\%")
-                .replace("_", "\\_");
-        return "%" + escaped.toLowerCase() + "%"; // contains 검색: 앞뒤 %
-    }
-
     public List<QualityControlDto> search(String purchaseOrderId,
                                           Integer materialId,
                                           LocalDateTime inspectionDateFrom,
@@ -90,38 +80,36 @@ public class QualityControlService {
                                           String result) {
 
         return qualityControlRepository.findAll((root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates = new ArrayList<>();
 
-            // 발주 ID - 부분검색
-            if (purchaseOrderId != null && !purchaseOrderId.isBlank()) {
-                String pattern = likePattern(purchaseOrderId);
-                predicates.add(
-                        cb.like(cb.lower(root.get("purchaseOrderId").as(String.class)), pattern, '\\')
-                );
-            }
+                    // 발주 ID
+                    if (purchaseOrderId != null && !purchaseOrderId.isEmpty()) {
+                        predicates.add(cb.equal(root.get("purchaseOrderId"), purchaseOrderId));
+                    }
 
-            // 자재 ID (숫자라서 그대로 일치 검색)
-            if (materialId != null) {
-                predicates.add(cb.equal(root.get("materialId"), materialId));
-            }
+                    // 자재 ID
+                    if (materialId != null) {
+                        predicates.add(cb.equal(root.get("materialId"), materialId));
+                    }
 
-            // 검사일시 from~to
-            if (inspectionDateFrom != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("inspectionDate"), inspectionDateFrom));
-            }
-            if (inspectionDateTo != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("inspectionDate"), inspectionDateTo));
-            }
+                    // 검사일시 From
+                    if (inspectionDateFrom != null) {
+                        predicates.add(cb.greaterThanOrEqualTo(root.get("inspectionDate"), inspectionDateFrom));
+                    }
 
-            // 검사 결과 - 부분검색
-            if (result != null && !result.isBlank()) {
-                String pattern = likePattern(result);
-                predicates.add(
-                        cb.like(cb.lower(root.get("result").as(String.class)), pattern, '\\')
-                );
-            }
+                    // 검사일시 To
+                    if (inspectionDateTo != null) {
+                        predicates.add(cb.lessThanOrEqualTo(root.get("inspectionDate"), inspectionDateTo));
+                    }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        }).stream().map(QualityControlDto::fromEntity).toList();
+                    // 검사 결과
+                    if (result != null && !result.isEmpty()) {
+                        predicates.add(cb.equal(root.get("result"), result));
+                    }
+
+                    return cb.and(predicates.toArray(new Predicate[0]));
+                }).stream()
+                .map(QualityControlDto::fromEntity)
+                .toList();
     }
 }
