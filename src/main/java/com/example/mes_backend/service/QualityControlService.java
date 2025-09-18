@@ -31,6 +31,7 @@ public class QualityControlService {
 //        QualityControlEntity save = qualityControlRepository.save(entity);
 //        return QualityControlDto.fromEntity(save);
 //    }
+
     @Transactional
     public List<QualityControlDto> saveInspections(List<QualityControlDto> qualityControlDtos) {
         List<QualityControlEntity> entities = new ArrayList<>();

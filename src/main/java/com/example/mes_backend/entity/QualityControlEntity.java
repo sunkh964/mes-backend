@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,25 +18,32 @@ public class QualityControlEntity {
     @Column(name = "qc_id" , nullable = false)
     private Integer qcId;
 
-    //발주 ID
-    @Column(name = "purchase_order_id", length = 20, nullable = false)
-    private String purchaseOrderId;
+    // 발주 수량은 다른 페이지 참조
 
-    //발주 상세 ID
-    @Column(name = "order_detail_id", nullable = false)
-    private Integer orderDetailId;
+    // 발주 (PurchaseOrderEntity와 관계 매핑)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "purchase_order_id", nullable = false)
+    private PurchaseOrderEntity purchaseOrderId;
 
-    // 작업지시 ID
-    @Column(name = "work_order_id")
-    private Integer workOrderId;
+    // 발주 상세 (PurchaseOrderDetailEntity와 관계 매핑)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_detail_id", nullable = false)
+    private PurchaseDetailEntity purchaseOrderDetailId;
 
-    // 자재 ID
-    @Column(name = "material_id", nullable = false)
-    private Integer materialId;
+    // 작업지시 (WorkOrderEntity와 관계 매핑, NULL 허용)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_order_id")
+    private WorkOrderEntity workOrderId;
 
-    // 검사자 ID
-    @Column(name = "inspector_id", nullable = false, length = 20)
-    private String inspectorId;
+    // 자재 (MaterialEntity와 관계 매핑)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id", nullable = false)
+    private MaterialEntity materialId;
+
+    // 검사자 (Employee Entity와 관계 매핑)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inspector_id", nullable = false)
+    private Employee inspectorId;
 
     // 검사 수행일
     @CreationTimestamp
@@ -44,15 +52,15 @@ public class QualityControlEntity {
 
     //검사 결과
     @Column(name = "result", nullable = false, length = 20)
-    private String result;
+    private String result = "PENDING";
 
     // 합격 수량
     @Column(name = "pass_quantity", columnDefinition = "int default 0")
-    private Integer passQuantity;
+    private Integer passQuantity=0;
 
     // 불합격 수량
     @Column(name = "fail_quantity", columnDefinition = "int default 0")
-    private Integer failQuantity;
+    private Integer failQuantity=0;
 
     // 불량 유형
     @Column(name = "defect_type", length = 50)
@@ -68,10 +76,7 @@ public class QualityControlEntity {
     private LocalDateTime createdAt;
 
     // 수정일
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
     private LocalDateTime updatedAt;
-
-    @Column(name = "order_quantity", nullable = false)
-    private Integer order_quantity;
 }
