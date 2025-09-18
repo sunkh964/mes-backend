@@ -19,11 +19,11 @@ public class QualityControlController {
 
     private final QualityControlService qualityControlService;
 
-    @PostMapping("/webhook")
-    public ResponseEntity<Void> receiveFromErp(@RequestBody List<QualityControlDto> qualityControlDtos) {
-        qualityControlService.saveInspections(qualityControlDtos);
-        return ResponseEntity.noContent().build();
-    }
+//    @PostMapping("/webhook")
+//    public ResponseEntity<Void> receiveFromErp(@RequestBody List<QualityControlDto> qualityControlDtos) {
+//        qualityControlService.saveInspections(qualityControlDtos);
+//        return ResponseEntity.noContent().build();
+//    }
 
 
     // 전체 조회

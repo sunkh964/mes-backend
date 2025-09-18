@@ -23,11 +23,12 @@ public class PurchaseOrderEntity {
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
 
-    @Column(name = "delivery_date", nullable = false)
+    @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
-    @Column(name = "supplier_id", nullable = false)
-    private Integer supplierId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private SupplierEntity supplier;
 
     @Column(name = "status", columnDefinition = "int default 0")
     private Integer status; // 0: 작성, 1: 승인, 2: 입고완료
@@ -52,5 +53,6 @@ public class PurchaseOrderEntity {
             columnDefinition = "datetime on update current_timestamp")
     private LocalDateTime updatedAt;
 
-
+    @Column(name = "remark", length = 255)
+    private String remark;
 }

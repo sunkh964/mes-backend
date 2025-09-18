@@ -20,42 +20,6 @@ public class QualityControlService {
 
     private final QualityControlRepository qualityControlRepository;
 
-    //erp에서 웹훅으로 들어온 검사 요청을 저장
-//    @Transactional
-//    public QualityControlDto saveInspection(QualityControlDto dto){
-//        //이부분 설계에서 result 값을 default로 해야하는 거아닌가....
-//        if(dto.getResult() == null){
-//            dto.setResult("PENDING");
-//        }
-//        QualityControlEntity entity = dto.toEntity();
-//        QualityControlEntity save = qualityControlRepository.save(entity);
-//        return QualityControlDto.fromEntity(save);
-//    }
-
-    @Transactional
-    public List<QualityControlDto> saveInspections(List<QualityControlDto> qualityControlDtos) {
-        List<QualityControlEntity> entities = new ArrayList<>();
-
-        for (QualityControlDto dto : qualityControlDtos) {
-            // DTO → Entity 변환 (예: dto.toEntity() 메서드 있다고 가정)
-            QualityControlEntity entity = dto.toEntity();
-
-            // 결과값 없으면 기본값 "PENDING" 설정
-            if (entity.getResult() == null) {
-                entity.setResult("PENDING");
-            }
-            entities.add(entity);
-        }
-
-        // DB 저장
-        List<QualityControlEntity> saved = qualityControlRepository.saveAll(entities);
-
-        // Entity → DTO 변환 후 리턴
-        return saved.stream()
-                .map(QualityControlDto::fromEntity)
-                .toList();
-    }
-
 
     // 전체 조회
     public List<QualityControlDto> getAll() {
@@ -64,15 +28,13 @@ public class QualityControlService {
                 .map(QualityControlDto::fromEntity)
                 .toList();
     }
-
     // 단건 조회
     public QualityControlDto getById(Integer qualityControlId) {
         return qualityControlRepository.findById(qualityControlId)
                 .map(QualityControlDto::fromEntity)
                 .orElse(null);
-
     }
-
+    // 다양한 조건으로 조회
     public List<QualityControlDto> search(String purchaseOrderId,
                                           Integer materialId,
                                           LocalDateTime inspectionDateFrom,
@@ -80,16 +42,16 @@ public class QualityControlService {
                                           String result) {
 
         return qualityControlRepository.findAll((root, query, cb) -> {
-                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates = new ArrayList<>();  // 검색 조건 리스트
 
-                    // 발주 ID
+                    // 발주 ID: purchaseOrderId(PurchaseOrderEntity)와 join 후, 그 안의 purchaseOrderId(String) 필드를 검색
                     if (purchaseOrderId != null && !purchaseOrderId.isEmpty()) {
-                        predicates.add(cb.equal(root.get("purchaseOrderId"), purchaseOrderId));
+                        predicates.add(cb.like(root.join("purchaseOrderId").get("purchaseOrderId"), "%" + purchaseOrderId + "%"));
                     }
 
-                    // 자재 ID
+                    // 자재 ID: materialId(MaterialEntity)와 join 후, 그 안의 materialId(Integer) 필드를 검색
                     if (materialId != null) {
-                        predicates.add(cb.equal(root.get("materialId"), materialId));
+                        predicates.add(cb.equal(root.join("materialId").get("materialId"), materialId));
                     }
 
                     // 검사일시 From
@@ -104,7 +66,7 @@ public class QualityControlService {
 
                     // 검사 결과
                     if (result != null && !result.isEmpty()) {
-                        predicates.add(cb.equal(root.get("result"), result));
+                        predicates.add(cb.like(root.get("result"), "%" + result + "%"));
                     }
 
                     return cb.and(predicates.toArray(new Predicate[0]));
@@ -112,4 +74,98 @@ public class QualityControlService {
                 .map(QualityControlDto::fromEntity)
                 .toList();
     }
+
+
+    //erp에서 웹훅으로 들어온 검사 요청을 저장
+//    @Transactional
+//    public QualityControlDto saveInspection(QualityControlDto dto){
+//        //이부분 설계에서 result 값을 default로 해야하는 거아닌가....
+//        if(dto.getResult() == null){
+//            dto.setResult("PENDING");
+//        }
+//        QualityControlEntity entity = dto.toEntity();
+//        QualityControlEntity save = qualityControlRepository.save(entity);
+//        return QualityControlDto.fromEntity(save);
+//    }
+
+//    @Transactional
+//    public List<QualityControlDto> saveInspections(List<QualityControlDto> qualityControlDtos) {
+//        List<QualityControlEntity> entities = new ArrayList<>();
+//
+//        for (QualityControlDto dto : qualityControlDtos) {
+//            // DTO → Entity 변환 (예: dto.toEntity() 메서드 있다고 가정)
+//            QualityControlEntity entity = dto.toEntity();
+//
+//            // 결과값 없으면 기본값 "PENDING" 설정
+//            if (entity.getResult() == null) {
+//                entity.setResult("PENDING");
+//            }
+//            entities.add(entity);
+//        }
+//
+//        // DB 저장
+//        List<QualityControlEntity> saved = qualityControlRepository.saveAll(entities);
+//
+//        // Entity → DTO 변환 후 리턴
+//        return saved.stream()
+//                .map(QualityControlDto::fromEntity)
+//                .toList();
+//    }
+//
+//
+//    // 전체 조회
+//    public List<QualityControlDto> getAll() {
+//        return qualityControlRepository.findAll()
+//                .stream()
+//                .map(QualityControlDto::fromEntity)
+//                .toList();
+//    }
+//
+//    // 단건 조회
+//    public QualityControlDto getById(Integer qualityControlId) {
+//        return qualityControlRepository.findById(qualityControlId)
+//                .map(QualityControlDto::fromEntity)
+//                .orElse(null);
+//
+//    }
+//
+//    public List<QualityControlDto> search(String purchaseOrderId,
+//                                          Integer materialId,
+//                                          LocalDateTime inspectionDateFrom,
+//                                          LocalDateTime inspectionDateTo,
+//                                          String result) {
+//
+//        return qualityControlRepository.findAll((root, query, cb) -> {
+//                    List<Predicate> predicates = new ArrayList<>();
+//
+//                    // 발주 ID
+//                    if (purchaseOrderId != null && !purchaseOrderId.isEmpty()) {
+//                        predicates.add(cb.equal(root.get("purchaseOrderId"), purchaseOrderId));
+//                    }
+//
+//                    // 자재 ID
+//                    if (materialId != null) {
+//                        predicates.add(cb.equal(root.get("materialId"), materialId));
+//                    }
+//
+//                    // 검사일시 From
+//                    if (inspectionDateFrom != null) {
+//                        predicates.add(cb.greaterThanOrEqualTo(root.get("inspectionDate"), inspectionDateFrom));
+//                    }
+//
+//                    // 검사일시 To
+//                    if (inspectionDateTo != null) {
+//                        predicates.add(cb.lessThanOrEqualTo(root.get("inspectionDate"), inspectionDateTo));
+//                    }
+//
+//                    // 검사 결과
+//                    if (result != null && !result.isEmpty()) {
+//                        predicates.add(cb.equal(root.get("result"), result));
+//                    }
+//
+//                    return cb.and(predicates.toArray(new Predicate[0]));
+//                }).stream()
+//                .map(QualityControlDto::fromEntity)
+//                .toList();
+//    }
 }
