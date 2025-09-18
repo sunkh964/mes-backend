@@ -6,19 +6,16 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
 @Table(name = "purchase_orders")
 public class PurchaseOrderEntity {
-    @Id
-    @Column(name = "purchase_order_id", length = 20, nullable = false)
-    private String purchaseOrderId;   // PK 복구!
 
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PurchaseDetailEntity> orderDetails = new ArrayList<>();
+    @Id
+    @Column(name = "purchase_order_id", nullable = false, length = 20)
+    private String purchaseOrderId;
 
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
@@ -26,12 +23,12 @@ public class PurchaseOrderEntity {
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supplier_id")
-    private SupplierEntity supplier;
+    // 🔽 DB 수정을 하지 않는 조회용 ID 필드
+    @Column(name = "supplier_id", insertable = false, updatable = false)
+    private Integer supplierId;
 
-    @Column(name = "status", columnDefinition = "int default 0")
-    private Integer status; // 0: 작성, 1: 승인, 2: 입고완료
+    @Column(name = "status")
+    private Integer status;
 
     @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount;
@@ -45,6 +42,9 @@ public class PurchaseOrderEntity {
     @Column(name = "approved_date")
     private LocalDateTime approvedDate;
 
+    @Column(name = "remark", length = 255)
+    private String remark;
+
     @Column(name = "created_at", updatable = false, insertable = false,
             columnDefinition = "datetime default current_timestamp")
     private LocalDateTime createdAt;
@@ -53,6 +53,10 @@ public class PurchaseOrderEntity {
             columnDefinition = "datetime on update current_timestamp")
     private LocalDateTime updatedAt;
 
-    @Column(name = "remark", length = 255)
-    private String remark;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private SupplierEntity supplier;
+
+    @OneToMany(mappedBy = "purchaseOrder")
+    private List<PurchaseDetailEntity> purchaseDetails;
 }
