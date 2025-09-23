@@ -1,6 +1,9 @@
 package com.example.mes_backend.dto;
 
+import com.example.mes_backend.entity.CustomerEntity;
+import com.example.mes_backend.entity.SalesOrderEntity;
 import com.example.mes_backend.entity.ShipmentsEntity;
+import com.example.mes_backend.entity.VesselEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -50,6 +53,7 @@ public class ShipmentsDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
+    // === DTO → Entity 변환 ===
     public ShipmentsEntity toEntity() {
         ShipmentsEntity entity = new ShipmentsEntity();
         entity.setShipmentId(this.shipmentId);
@@ -62,6 +66,22 @@ public class ShipmentsDto {
         entity.setRemark(this.remark);
         entity.setCreatedAt(this.createdAt);
         entity.setUpdatedAt(this.updatedAt);
+        // 연관 엔티티를 ID만으로 매핑 (프록시 엔티티)
+        if (this.customerId != null) {
+            CustomerEntity customer = new CustomerEntity();
+            customer.setCustomerId(this.customerId);
+            entity.setCustomer(customer);
+        }
+        if (this.salesOrderId != null) {
+            SalesOrderEntity salesOrder = new SalesOrderEntity();
+            salesOrder.setSalesOrderId(this.salesOrderId);
+            entity.setSalesOrder(salesOrder);
+        }
+        if (this.vesselId != null) {
+            VesselEntity vessel = new VesselEntity();
+            vessel.setVesselId(this.vesselId);
+            entity.setVessel(vessel);
+        }
 
         // salesOrder, customer, vessel은 ID만으로 직접 set 불가 → 서비스에서 주입
         return entity;

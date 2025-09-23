@@ -100,9 +100,27 @@ public class ShipmentsService {
     }
 
     //  ---------- 등록 ---------
+    @Transactional
     public ShipmentsDto create(ShipmentsDto dto) {
-        ShipmentsEntity entity = dto.toEntity();
+        if (dto.getShipmentId() != null && shipmentsRepository.existsById(dto.getShipmentId())) {
+            throw new IllegalArgumentException("이미 존재하는 출하ID입니다: " + dto.getShipmentId());
+        }
 
+        // FK 매핑된 엔티티 조회
+        SalesOrderEntity salesOrder = salesOrderRepository.findById(dto.getSalesOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("수주가 존재하지 않습니다: " + dto.getSalesOrderId()));
+
+        CustomerEntity customer = customerRepository.findById(dto.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException("고객이 존재하지 않습니다: " + dto.getCustomerId()));
+
+        VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
+                .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+
+        // DTO → Entity 변환
+        ShipmentsEntity entity = dto.toEntity();
+        entity.setSalesOrder(salesOrder);
+        entity.setCustomer(customer);
+        entity.setVessel(vessel);
 
         ShipmentsEntity saved = shipmentsRepository.save(entity);
         return ShipmentsDto.fromEntity(saved);
@@ -122,32 +140,17 @@ public class ShipmentsService {
     public ShipmentsDto update(String shipmentId, ShipmentsDto dto) {
         return shipmentsRepository.findById(shipmentId)
                 .map(entity -> {
-                    // 연관 엔티티 조회
-                    SalesOrderEntity salesOrder = salesOrderRepository.findById(dto.getSalesOrderId())
-                            .orElseThrow(() -> new IllegalArgumentException("수주가 존재하지 않습니다: " + dto.getSalesOrderId()));
-                    CustomerEntity customer = customerRepository.findById(dto.getCustomerId())
-                            .orElseThrow(() -> new IllegalArgumentException("고객이 존재하지 않습니다: " + dto.getCustomerId()));
-                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
-                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+                    // DTO → Entity 변환
+                    ShipmentsEntity updated = dto.toEntity();
+                    updated.setShipmentId(entity.getShipmentId()); // PK 유지
 
-                    // 연관 엔티티 세팅
-                    entity.setSalesOrder(salesOrder);
-                    entity.setCustomer(customer);
-                    entity.setVessel(vessel);
-
-                    // 일반 필드 세팅
-                    entity.setPlannedShipDate(dto.getPlannedShipDate());
-                    entity.setActualShipDate(dto.getActualShipDate());
-                    entity.setStatus(dto.getStatus());
-                    entity.setCreatedBy(dto.getCreatedBy());
-                    entity.setApprovedDate(dto.getApprovedDate());
-                    entity.setApprovedBy(dto.getApprovedBy());
-                    entity.setRemark(dto.getRemark());
-
-                    return ShipmentsDto.fromEntity(shipmentsRepository.save(entity));
+                    // DB에 저장
+                    ShipmentsEntity saved = shipmentsRepository.save(updated);
+                    return ShipmentsDto.fromEntity(saved);
                 })
                 .orElseThrow(() -> new IllegalArgumentException("수정할 출하목록이 존재하지 않습니다: " + shipmentId));
     }
+
 
 
 }
