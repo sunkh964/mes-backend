@@ -4,10 +4,7 @@ import com.example.mes_backend.dto.ShipmentsDto;
 import com.example.mes_backend.service.ShipmentsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,4 +47,24 @@ public class ShipmentsController {
                 status
         );
     }
+
+    // ----- 등록 -----
+    @PostMapping
+    public ShipmentsDto createShipment(@RequestBody ShipmentsDto dto) {
+        return shipmentsService.create(dto);
+    }
+
+    // -----삭제 -----
+    @DeleteMapping("/{shipmentId}")
+    public void deleteShipment(@PathVariable("shipmentId") String shipmentId) {
+        shipmentsService.delete(shipmentId);
+    }
+
+    // ------- 수정 -----
+    @PutMapping("/{shipmentId}")
+    public ShipmentsDto updateShipment(@PathVariable("shipmentId") String shipmentId,
+                                       @RequestBody ShipmentsDto dto) {
+        return shipmentsService.update(shipmentId, dto);
+    }
+
 }

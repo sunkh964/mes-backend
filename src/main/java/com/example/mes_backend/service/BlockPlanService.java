@@ -2,14 +2,8 @@ package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.BlockPlanDto;
 import com.example.mes_backend.dto.ProcessDto;
-import com.example.mes_backend.entity.BlockEntity;
-import com.example.mes_backend.entity.BlockPlanEntity;
-import com.example.mes_backend.entity.ProcessEntity;
-import com.example.mes_backend.entity.VesselEntity;
-import com.example.mes_backend.repository.BlockPlanRepository;
-import com.example.mes_backend.repository.BlockRepository;
-import com.example.mes_backend.repository.ProcessRepository;
-import com.example.mes_backend.repository.VesselRepository;
+import com.example.mes_backend.entity.*;
+import com.example.mes_backend.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +24,7 @@ public class BlockPlanService {
     private final VesselRepository vesselRepository;
     private final ProcessRepository processRepository;
     private final BlockRepository blockRepository;
+    private final WorkOrderRepository workOrderRepository;
 
     // 전체 조회
     public List<BlockPlanDto> getAll() {
@@ -101,27 +96,31 @@ public class BlockPlanService {
                 .toList();
     }
 
-    // ============= 등록 =================
+    @Transactional
     public BlockPlanDto create(BlockPlanDto dto) {
+        // DTO → Entity (PK만 매핑된 연관 엔티티 포함)
         BlockPlanEntity entity = dto.toEntity();
 
-        // 여기서 id가 null이면 신규이므로 existsById 검사하지 않음
-        if (dto.getBlockPlanId() != null) {
-            if (blockPlanRepository.existsById(dto.getBlockPlanId())) {
-                throw new IllegalArgumentException("이미 존재하는 블록 계획 ID입니다: " + dto.getBlockPlanId());
-            }
-        }
-
+        // 저장
         BlockPlanEntity saved = blockPlanRepository.save(entity);
+
+        // === WorkOrder 자동 생성 ===
+        WorkOrderEntity wo = new WorkOrderEntity();
+        wo.setProcess(saved.getProcess());
+        wo.setBlockPlan(saved);
+        wo.setBlock(saved.getBlockEntity());
+        wo.setQuantityToProduce(saved.getPlanQty());
+        wo.setQuantityProduced(0);
+        wo.setPlannedStartTime(saved.getStartDate().atStartOfDay());
+        wo.setPlannedEndTime(saved.getEndDate().atTime(23, 59, 59));
+        wo.setCurrentStatus("waiting");
+        wo.setPriority(0);
+        wo.setRemark("BlockPlan 기반 자동 생성");
+
+        workOrderRepository.save(wo);
+
         return BlockPlanDto.fromEntity(saved);
     }
-
-//    public BlockPlanDto create(BlockPlanDto dto) {
-//        if (blockPlanRepository.existsById(dto.getBlockPlanId())) {
-//            throw new IllegalArgumentException("이미 존재하는 블록 생산 계획입니다: " + dto.getBlockPlanId());
-//        }
-//        return BlockPlanDto.fromEntity(blockPlanRepository.save(dto.toEntity()));
-//    }
 
     // ============= 삭제 =================
     public void delete(int blockPlanId) {

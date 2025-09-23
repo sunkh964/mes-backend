@@ -71,12 +71,12 @@ public class WorkOrderDto {
     public static WorkOrderDto fromEntity(WorkOrderEntity entity) {
         WorkOrderDto dto = new WorkOrderDto();
         dto.setWorkOrderId(entity.getWorkOrderId());
-        dto.setProcessId(entity.getProcess().getProcessId());
-        dto.setBlockPlanId(entity.getBlockPlan().getBlockPlanId());
-        dto.setBlockId(entity.getBlock().getBlockId());
-        dto.setWorkCenterId(entity.getWorkCenter().getWorkCenterId());
-        dto.setEquipmentId(entity.getEquipment().getEquipmentId());
-        dto.setEmployeeId(entity.getEmployee().getEmployeeId());
+        dto.setProcessId(entity.getProcess() != null ? entity.getProcess().getProcessId() : null);
+        dto.setBlockPlanId(entity.getBlockPlan() != null ? entity.getBlockPlan().getBlockPlanId() : null);
+        dto.setBlockId(entity.getBlock() != null ? entity.getBlock().getBlockId() : null);
+        dto.setWorkCenterId(entity.getWorkCenter() != null ? entity.getWorkCenter().getWorkCenterId() : null);
+        dto.setEquipmentId(entity.getEquipment() != null ? entity.getEquipment().getEquipmentId() : null);
+        dto.setEmployeeId(entity.getEmployee() != null ? entity.getEmployee().getEmployeeId() : null);
         dto.setInstruction(entity.getInstruction());
         dto.setQuantityToProduce(entity.getQuantityToProduce());
         dto.setQuantityProduced(entity.getQuantityProduced());
@@ -91,5 +91,6 @@ public class WorkOrderDto {
         dto.setUpdatedAt(entity.getUpdatedAt());
         return dto;
     }
+
 
 }

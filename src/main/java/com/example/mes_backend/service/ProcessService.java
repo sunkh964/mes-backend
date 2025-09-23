@@ -2,6 +2,7 @@ package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.ProcessDto;
 import com.example.mes_backend.repository.ProcessRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -106,4 +107,24 @@ public class ProcessService {
         }
         processRepository.deleteById(processId);
     }
+
+    // 수정
+    @Transactional
+    public ProcessDto update(String processId, ProcessDto dto) {
+        return processRepository.findById(processId)
+                .map(entity -> {
+                    entity.setProcessNm(dto.getProcessNm());
+                    entity.setProcessInfo(dto.getProcessInfo());
+                    entity.setProcessSequence(dto.getProcessSequence());
+                    entity.setStandardTime(dto.getStandardTime());
+                    entity.setIsActive(dto.getIsActive());
+                    entity.setRemark(dto.getRemark());
+
+                    return ProcessDto.fromEntity(processRepository.save(entity));
+                })
+                .orElseThrow(() -> new IllegalArgumentException("수정할 공정이 존재하지 않습니다: " + processId));
+    }
+
+
+
 }

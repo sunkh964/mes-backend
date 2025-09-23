@@ -87,5 +87,13 @@ public class ProcessController {
         processService.delete(processId);
     }
 
+    // 수정
+    @PutMapping("/{processId}")
+    public ProcessDto updateProcess(
+            @PathVariable("processId") String processId,
+            @RequestBody ProcessDto dto) {
+        return processService.update(processId, dto);
+    }
+
 
 }

@@ -23,10 +23,10 @@ public class ShipmentsDto {
     private String vesselId;       // 선박 ID
 
     // 일정
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime plannedShipDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime actualShipDate;
 
     // 상태 (0: 계획, 1: 출하, 2: 인도완료, 3: 취소)
@@ -35,7 +35,7 @@ public class ShipmentsDto {
     // 등록/승인 정보
     private String createdBy;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime approvedDate;
 
     private String approvedBy;
@@ -50,10 +50,6 @@ public class ShipmentsDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    /**
-     * DTO → Entity 변환
-     * (연관 엔티티는 서비스 계층에서 repository로 주입 필요)
-     */
     public ShipmentsEntity toEntity() {
         ShipmentsEntity entity = new ShipmentsEntity();
         entity.setShipmentId(this.shipmentId);

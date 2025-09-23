@@ -1,6 +1,9 @@
 package com.example.mes_backend.dto;
 
+import com.example.mes_backend.entity.BlockEntity;
 import com.example.mes_backend.entity.BlockPlanEntity;
+import com.example.mes_backend.entity.ProcessEntity;
+import com.example.mes_backend.entity.VesselEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,6 +39,25 @@ public class BlockPlanDto {
     // DTO -> Entity
     public BlockPlanEntity toEntity(){
         BlockPlanEntity blockPlanEntity = new BlockPlanEntity();
+
+        // ===== 연관관계 매핑 =====
+        if (this.vesselId != null) {
+            VesselEntity vessel = new VesselEntity();
+            vessel.setVesselId(this.vesselId);  // PK만 세팅
+            blockPlanEntity.setVesselEntity(vessel);
+        }
+
+        if (this.processId != null) {
+            ProcessEntity process = new ProcessEntity();
+            process.setProcessId(this.processId);
+            blockPlanEntity.setProcess(process);
+        }
+
+        if (this.blockId != null) {
+            BlockEntity block = new BlockEntity();
+            block.setBlockId(this.blockId);
+            blockPlanEntity.setBlockEntity(block);
+        }
 
         blockPlanEntity.setBlockPlanId((this.blockPlanId));
         blockPlanEntity.setPlanQty(this.planQty);

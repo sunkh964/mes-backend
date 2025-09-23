@@ -1,8 +1,14 @@
 package com.example.mes_backend.service;
 
+import com.example.mes_backend.dto.BlockPlanDto;
 import com.example.mes_backend.dto.ShipmentsDto;
+import com.example.mes_backend.entity.*;
+import com.example.mes_backend.repository.CustomerRepository;
+import com.example.mes_backend.repository.SalesOrderRepository;
 import com.example.mes_backend.repository.ShipmentsRepository;
+import com.example.mes_backend.repository.VesselRepository;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +22,9 @@ import java.util.List;
 @Slf4j
 public class ShipmentsService {
     private final ShipmentsRepository shipmentsRepository;
+    private final SalesOrderRepository salesOrderRepository;
+    private final CustomerRepository customerRepository;
+    private final VesselRepository vesselRepository;
 
     //전체 조회
     public List<ShipmentsDto> getAll(){
@@ -88,6 +97,56 @@ public class ShipmentsService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         }).stream().map(ShipmentsDto::fromEntity).toList();
+    }
+
+    //  ---------- 등록 ---------
+    public ShipmentsDto create(ShipmentsDto dto) {
+        ShipmentsEntity entity = dto.toEntity();
+
+
+        ShipmentsEntity saved = shipmentsRepository.save(entity);
+        return ShipmentsDto.fromEntity(saved);
+    }
+
+    //  ---------- 삭제 ---------
+    public void delete(String shipmentId) {
+        if (!shipmentsRepository.existsById(shipmentId)) {
+            throw new IllegalArgumentException("삭제할 출하목록이 존재하지 않습니다: " + shipmentId);
+        }
+        shipmentsRepository.deleteById(shipmentId);
+    }
+
+    //  ---------- 수정 ---------
+    // 수정
+    @Transactional
+    public ShipmentsDto update(String shipmentId, ShipmentsDto dto) {
+        return shipmentsRepository.findById(shipmentId)
+                .map(entity -> {
+                    // 연관 엔티티 조회
+                    SalesOrderEntity salesOrder = salesOrderRepository.findById(dto.getSalesOrderId())
+                            .orElseThrow(() -> new IllegalArgumentException("수주가 존재하지 않습니다: " + dto.getSalesOrderId()));
+                    CustomerEntity customer = customerRepository.findById(dto.getCustomerId())
+                            .orElseThrow(() -> new IllegalArgumentException("고객이 존재하지 않습니다: " + dto.getCustomerId()));
+                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
+                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+
+                    // 연관 엔티티 세팅
+                    entity.setSalesOrder(salesOrder);
+                    entity.setCustomer(customer);
+                    entity.setVessel(vessel);
+
+                    // 일반 필드 세팅
+                    entity.setPlannedShipDate(dto.getPlannedShipDate());
+                    entity.setActualShipDate(dto.getActualShipDate());
+                    entity.setStatus(dto.getStatus());
+                    entity.setCreatedBy(dto.getCreatedBy());
+                    entity.setApprovedDate(dto.getApprovedDate());
+                    entity.setApprovedBy(dto.getApprovedBy());
+                    entity.setRemark(dto.getRemark());
+
+                    return ShipmentsDto.fromEntity(shipmentsRepository.save(entity));
+                })
+                .orElseThrow(() -> new IllegalArgumentException("수정할 출하목록이 존재하지 않습니다: " + shipmentId));
     }
 
 
