@@ -1,6 +1,7 @@
 package com.example.mes_backend.dto;
 
 import com.example.mes_backend.entity.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,13 +14,20 @@ public class WorkResultDto {
     private String employeeId;
     private Integer completedQuantity;
     private Integer defectiveQuantity;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime startTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime endTime;
+
     private String workCenterId;
     private String equipmentId;
     private String status;
     private String remark;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime updatedAt;
 
     // DTO를 Entity로 변환 (데이터 저장/수정 시)

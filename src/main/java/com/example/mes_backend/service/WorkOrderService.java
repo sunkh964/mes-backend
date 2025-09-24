@@ -29,7 +29,7 @@ public class WorkOrderService {
 
     // 전체 조회
     public List<WorkOrderDto> getAll() {
-        return workOrderRepository.findAll()
+        return workOrderRepository.findAllWithRelations()
                 .stream()
                 .map(WorkOrderDto::fromEntity)
                 .toList();

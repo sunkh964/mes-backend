@@ -36,27 +36,27 @@ public class MaterialInputDto {
         entity.setInputDate(this.inputDate);
         entity.setRemark(this.remark);
 
-        // 각 ID를 사용하여 연관 엔티티 객체를 만들어 설정
-        if (this.resultId != null) {
-            WorkResultEntity workResult = new WorkResultEntity();
-            workResult.setResultId(this.resultId);
-            entity.setWorkResult(workResult);
-        }
-        if (this.workOrderId != null) {
-            WorkOrderEntity workOrder = new WorkOrderEntity();
-            workOrder.setWorkOrderId(this.workOrderId);
-            entity.setWorkOrder(workOrder);
-        }
-        if (this.materialId != null) {
-            MaterialEntity material = new MaterialEntity();
-            material.setMaterialId(this.materialId);
-            entity.setMaterial(material);
-        }
-        if (this.employeeId != null) {
-            Employee employee = new Employee();
-            employee.setEmployeeId(this.employeeId);
-            entity.setEmployee(employee);
-        }
+//        // 각 ID를 사용하여 연관 엔티티 객체를 만들어 설정
+//        if (this.resultId != null) {
+//            WorkResultEntity workResult = new WorkResultEntity();
+//            workResult.setResultId(this.resultId);
+//            entity.setWorkResult(workResult);
+//        }
+//        if (this.workOrderId != null) {
+//            WorkOrderEntity workOrder = new WorkOrderEntity();
+//            workOrder.setWorkOrderId(this.workOrderId);
+//            entity.setWorkOrder(workOrder);
+//        }
+//        if (this.materialId != null) {
+//            MaterialEntity material = new MaterialEntity();
+//            material.setMaterialId(this.materialId);
+//            entity.setMaterial(material);
+//        }
+//        if (this.employeeId != null) {
+//            Employee employee = new Employee();
+//            employee.setEmployeeId(this.employeeId);
+//            entity.setEmployee(employee);
+//        }
 
         return entity;
     }

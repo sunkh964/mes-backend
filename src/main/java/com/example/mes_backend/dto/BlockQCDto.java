@@ -15,7 +15,7 @@ public class BlockQCDto {
     private Integer blockId;
     private String employeeId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime inspectionDate;
 
     private String result; // PASS, FAIL, PARTIAL, PENDING
@@ -26,10 +26,10 @@ public class BlockQCDto {
     private String defectType;
     private String remark;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime updatedAt;
 
     // DTO → Entity 변환
@@ -54,9 +54,13 @@ public class BlockQCDto {
     public static BlockQCDto fromEntity(BlockQCEntity entity) {
         BlockQCDto dto = new BlockQCDto();
         dto.setBlockQCId(entity.getBlockQCId());
-        dto.setWorkOrderId(entity.getWorkOrder().getWorkOrderId());
-        dto.setBlockId(entity.getBlock().getBlockId());
-        dto.setEmployeeId(entity.getEmployee().getEmployeeId());
+
+        // 연관 엔티티 안전 매핑 (null 체크)
+        dto.setWorkOrderId(entity.getWorkOrder() != null ? entity.getWorkOrder().getWorkOrderId() : null);
+        dto.setBlockId(entity.getBlock() != null ? entity.getBlock().getBlockId() : null);
+        dto.setEmployeeId(entity.getEmployee() != null ? entity.getEmployee().getEmployeeId() : null);
+
+        // 기본 속성 매핑
         dto.setInspectionDate(entity.getInspectionDate());
         dto.setResult(entity.getResult());
         dto.setPassQuantity(entity.getPassQuantity());

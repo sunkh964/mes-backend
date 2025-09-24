@@ -2,6 +2,8 @@ package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.QualityControlDto;
 import com.example.mes_backend.entity.QualityControlEntity;
+import com.example.mes_backend.repository.EmployeeRepository;
+import com.example.mes_backend.repository.PurchaseOrderRepository;
 import com.example.mes_backend.repository.QualityControlRepository;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -19,6 +21,8 @@ import java.util.List;
 public class QualityControlService {
 
     private final QualityControlRepository qualityControlRepository;
+    private final EmployeeRepository employeeRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
 
     //erp에서 웹훅으로 들어온 검사 요청을 저장
 //    @Transactional
@@ -112,4 +116,45 @@ public class QualityControlService {
                 .map(QualityControlDto::fromEntity)
                 .toList();
     }
+
+    // 신규 등록
+    @Transactional
+    public QualityControlDto create(QualityControlDto dto) {
+        QualityControlEntity entity = dto.toEntity();
+
+        // 여기서 DB에 있는 실제 엔티티를 가져옴
+        if (dto.getInspectorId() != null) {
+            entity.setInspectorId(employeeRepository.getReferenceById(dto.getInspectorId()));
+        }
+        if (dto.getPurchaseOrderId() != null) {
+            entity.setPurchaseOrderId(purchaseOrderRepository.getReferenceById(dto.getPurchaseOrderId()));
+        }
+
+        return QualityControlDto.fromEntity(qualityControlRepository.save(entity));
+    }
+
+    // 수정
+    @Transactional
+    public QualityControlDto update(Integer qcId, QualityControlDto dto) {
+        return qualityControlRepository.findById(qcId)
+                .map(existing -> {
+                    QualityControlEntity updated = dto.toEntity();
+                    updated.setQcId(existing.getQcId());
+                    if (updated.getResult() == null) {
+                        updated.setResult("PENDING");
+                    }
+                    return QualityControlDto.fromEntity(qualityControlRepository.save(updated));
+                })
+                .orElseThrow(() -> new IllegalArgumentException("품질검사 내역이 존재하지 않습니다: " + qcId));
+    }
+
+    // 삭제
+    @Transactional
+    public void delete(Integer qcId) {
+        if (!qualityControlRepository.existsById(qcId)) {
+            throw new IllegalArgumentException("삭제할 품질검사 내역이 존재하지 않습니다: " + qcId);
+        }
+        qualityControlRepository.deleteById(qcId);
+    }
+
 }

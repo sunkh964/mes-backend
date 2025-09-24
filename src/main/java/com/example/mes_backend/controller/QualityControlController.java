@@ -56,4 +56,24 @@ public class QualityControlController {
         return qualityControlService.search(purchaseOrderId, materialId, inspectionDateFrom, inspectionDateTo, result);
     }
 
+    // ----- 등록 -----
+    @PostMapping
+    public QualityControlDto create(@RequestBody QualityControlDto dto) {
+        return qualityControlService.create(dto);
+    }
+
+    // ----- 삭제 -----
+    @DeleteMapping("/{qcId}")
+    public void delete(@PathVariable("qcId") Integer qcId) {
+        qualityControlService.delete(qcId);
+    }
+
+    // ----- 수정 -----
+    @PutMapping("/{qcId}")
+    public QualityControlDto update(
+            @PathVariable("qcId") Integer qcId,
+            @RequestBody QualityControlDto dto
+    ) {
+        return qualityControlService.update(qcId, dto);
+    }
 }

@@ -34,4 +34,25 @@ public class BlockQCController {
     ) {
         return blockQCService.search(blockId, result, from, to);
     }
+
+    // ============= 등록 =================
+    @PostMapping
+    public BlockQCDto createBlockQC(@RequestBody BlockQCDto dto) {
+        return blockQCService.create(dto);
+    }
+
+    // ============= 삭제 =================
+    @DeleteMapping("/{blockQCId}")
+    public void deleteBlockQC(@PathVariable("blockQCId") int blockQCId) {
+        blockQCService.delete(blockQCId);
+    }
+
+    // ============= 수정 =================
+    @PutMapping("/{blockQCId}")
+    public BlockQCDto updateBlockQC(
+            @PathVariable("blockQCId") int blockQCId,
+            @RequestBody BlockQCDto dto
+    ) {
+        return blockQCService.update(blockQCId, dto);
+    }
 }

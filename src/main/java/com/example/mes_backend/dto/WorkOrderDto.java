@@ -16,6 +16,9 @@ public class WorkOrderDto {
     private Integer blockId;
     private String workCenterId;
     private String equipmentId;
+
+    private Integer processStandardTime;
+
     private String employeeId;
 
     private String instruction;
@@ -76,6 +79,12 @@ public class WorkOrderDto {
         dto.setBlockId(entity.getBlock() != null ? entity.getBlock().getBlockId() : null);
         dto.setWorkCenterId(entity.getWorkCenter() != null ? entity.getWorkCenter().getWorkCenterId() : null);
         dto.setEquipmentId(entity.getEquipment() != null ? entity.getEquipment().getEquipmentId() : null);
+
+        // 여기서 공정 표준시간 매핑
+        if (entity.getWorkCenter() != null && entity.getWorkCenter().getProcess() != null) {
+            dto.setProcessStandardTime(entity.getWorkCenter().getProcess().getStandardTime());
+        }
+
         dto.setEmployeeId(entity.getEmployee() != null ? entity.getEmployee().getEmployeeId() : null);
         dto.setInstruction(entity.getInstruction());
         dto.setQuantityToProduce(entity.getQuantityToProduce());

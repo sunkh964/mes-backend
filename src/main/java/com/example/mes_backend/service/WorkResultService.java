@@ -1,7 +1,9 @@
 package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.WorkResultDto;
+import com.example.mes_backend.entity.WorkResultEntity;
 import com.example.mes_backend.repository.WorkResultRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -202,4 +204,52 @@ public class WorkResultService {
                     .map(WorkResultDto::fromEntity)
                     .toList();
         }
+
+    // =============  등록
+    @Transactional
+    public WorkResultDto create(WorkResultDto dto) {
+        // 신규 등록일 때만
+        if (dto.getResultId() != null && workResultRepository.existsById(dto.getResultId())) {
+            throw new IllegalArgumentException("이미 존재하는 실적 ID입니다: " + dto.getResultId());
+        }
+
+        WorkResultEntity entity = dto.toEntity();
+
+        // 상태 기본값
+        if (entity.getStatus() == null) {
+            entity.setStatus("in_progress");
+        }
+
+        WorkResultEntity saved = workResultRepository.save(entity);
+        return WorkResultDto.fromEntity(saved);
+    }
+
+    // ========= 수정 =========
+    @Transactional
+    public WorkResultDto update(Integer resultId, WorkResultDto dto) {
+        return workResultRepository.findById(resultId)
+                .map(entity -> {
+                    // 기존 엔티티에 수정할 값만 반영
+                    entity.setCompletedQuantity(dto.getCompletedQuantity());
+                    entity.setDefectiveQuantity(dto.getDefectiveQuantity());
+                    entity.setStartTime(dto.getStartTime());
+                    entity.setEndTime(dto.getEndTime());
+                    entity.setStatus(dto.getStatus());
+                    entity.setRemark(dto.getRemark());
+                    entity.setUpdatedAt(LocalDateTime.now());
+
+                    WorkResultEntity saved = workResultRepository.save(entity);
+                    return WorkResultDto.fromEntity(saved);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("수정할 실적이 존재하지 않습니다: " + resultId));
+    }
+
+    // ========= 삭제 =========
+    @Transactional
+    public void delete(Integer resultId) {
+        if (!workResultRepository.existsById(resultId)) {
+            throw new IllegalArgumentException("삭제할 실적이 존재하지 않습니다: " + resultId);
+        }
+        workResultRepository.deleteById(resultId);
+    }
 }

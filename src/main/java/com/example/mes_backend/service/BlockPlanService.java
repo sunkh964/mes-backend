@@ -96,6 +96,7 @@ public class BlockPlanService {
                 .toList();
     }
 
+    // ========= 등록=========
     @Transactional
     public BlockPlanDto create(BlockPlanDto dto) {
         // DTO → Entity (PK만 매핑된 연관 엔티티 포함)
@@ -122,7 +123,7 @@ public class BlockPlanService {
         return BlockPlanDto.fromEntity(saved);
     }
 
-    // ============= 삭제 =================
+    // ========= 삭제 ==========
     public void delete(int blockPlanId) {
         if (!blockPlanRepository.existsById(blockPlanId)) {
             throw new IllegalArgumentException("삭제할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId);
@@ -130,7 +131,7 @@ public class BlockPlanService {
         blockPlanRepository.deleteById(blockPlanId);
     }
 
-    // 수정
+    // ========= 수정 =========
     @Transactional
     public BlockPlanDto update(int blockPlanId, BlockPlanDto dto) {
         return blockPlanRepository.findById(blockPlanId)

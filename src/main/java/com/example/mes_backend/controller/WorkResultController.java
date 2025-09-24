@@ -4,10 +4,7 @@ import com.example.mes_backend.dto.WorkResultDto;
 import com.example.mes_backend.service.WorkResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -98,5 +95,26 @@ public class WorkResultController {
         else {
             return workResultService.findAll();
         }
+    }
+
+    // ============= 등록
+    @PostMapping
+    public WorkResultDto createWorkResult(@RequestBody WorkResultDto dto) {
+        return workResultService.create(dto);
+    }
+
+    // ================ 수정
+    @PutMapping("/{resultId}")
+    public WorkResultDto updateWorkResult(
+            @PathVariable Integer resultId,
+            @RequestBody WorkResultDto dto
+    ) {
+        return workResultService.update(resultId, dto);
+    }
+
+    // =============== 삭제
+    @DeleteMapping("/{resultId}")
+    public void deleteWorkResult(@PathVariable Integer resultId) {
+        workResultService.delete(resultId);
     }
 }

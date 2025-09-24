@@ -4,10 +4,8 @@ import com.example.mes_backend.dto.MaterialInputDto;
 import com.example.mes_backend.service.MaterialInputService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,5 +41,25 @@ public class MaterialInputController {
                 startDateTime,
                 endDateTime
         );
+    }
+
+    // ================= 등록 =================
+    @PostMapping
+    public MaterialInputDto create(@RequestBody MaterialInputDto dto) {
+        return materialInputService.create(dto);
+    }
+
+    // ================= 수정 =================
+    @PutMapping("/{inputId}")
+    public MaterialInputDto update(
+            @PathVariable("inputId") int inputId,
+            @RequestBody MaterialInputDto dto) {
+        return materialInputService.update(inputId, dto);
+    }
+
+    // ================= 삭제 =================
+    @DeleteMapping("/{inputId}")
+    public void delete(@PathVariable("inputId") int inputId) {
+        materialInputService.delete(inputId);
     }
 }

@@ -28,7 +28,7 @@ public class QualityControlEntity {
     // 발주 상세 (PurchaseOrderDetailEntity와 관계 매핑)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_detail_id", nullable = false)
-    private PurchaseDetailEntity purchaseOrderDetailId;
+    private PurchaseDetailEntity orderDetailId;
 
     // 작업지시 (WorkOrderEntity와 관계 매핑, NULL 허용)
     @ManyToOne(fetch = FetchType.LAZY)
