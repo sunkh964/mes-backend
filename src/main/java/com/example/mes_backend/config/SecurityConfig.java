@@ -40,8 +40,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(
                                         // 누구나 접근 가능한 '공개' 경로 설정
-                                        "/api/auth/login"
-
+                                        "/api/auth/login",
+                                        // api모든접근허용
+                                        "/api/**"
                                 ).permitAll()
                                 // 특정 역할(ROLE)을 가진 사용자만 접근 허용
 //                                .requestMatchers("/api/v1/admin", "/api/v1/admin/**").hasRole("ADMIN")
