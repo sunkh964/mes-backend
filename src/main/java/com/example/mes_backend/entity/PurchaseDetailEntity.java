@@ -60,7 +60,7 @@ public class PurchaseDetailEntity {
     @JoinColumn(name = "purchase_order_id")
     private PurchaseOrderEntity purchaseOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id")
-    private MaterialEntity material;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "material_id")
+//    private MaterialEntity material;
 }

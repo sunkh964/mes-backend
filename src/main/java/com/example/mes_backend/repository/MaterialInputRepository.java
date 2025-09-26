@@ -1,6 +1,7 @@
 package com.example.mes_backend.repository;
 
 import com.example.mes_backend.entity.MaterialInputEntity;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -9,10 +10,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface MaterialInputRepository
-        extends JpaRepository<MaterialInputEntity, Integer>,
+public interface MaterialInputRepository extends JpaRepository<MaterialInputEntity, Integer>,
         JpaSpecificationExecutor<MaterialInputEntity> {
 
+    @Transactional
+    public void deleteById(Integer inputId);
 //    // --- 1가지 조건 ---
 //    List<MaterialInputEntity> findByWorkResult_ResultId(Integer resultId); // ✅ 수정됨
 //    List<MaterialInputEntity> findByWorkOrder_WorkOrderId(Integer workOrderId); // 작업지시 ID

@@ -36,27 +36,25 @@ public class MaterialInputDto {
         entity.setInputDate(this.inputDate);
         entity.setRemark(this.remark);
 
-//        // 각 ID를 사용하여 연관 엔티티 객체를 만들어 설정
-//        if (this.resultId != null) {
-//            WorkResultEntity workResult = new WorkResultEntity();
-//            workResult.setResultId(this.resultId);
-//            entity.setWorkResult(workResult);
-//        }
-//        if (this.workOrderId != null) {
-//            WorkOrderEntity workOrder = new WorkOrderEntity();
-//            workOrder.setWorkOrderId(this.workOrderId);
-//            entity.setWorkOrder(workOrder);
-//        }
-//        if (this.materialId != null) {
-//            MaterialEntity material = new MaterialEntity();
-//            material.setMaterialId(this.materialId);
-//            entity.setMaterial(material);
-//        }
-//        if (this.employeeId != null) {
-//            Employee employee = new Employee();
-//            employee.setEmployeeId(this.employeeId);
-//            entity.setEmployee(employee);
-//        }
+// WorkResult, WorkOrder, Employee는 그대로 ManyToOne 매핑
+        if (this.resultId != null) {
+            WorkResultEntity workResult = new WorkResultEntity();
+            workResult.setResultId(this.resultId);
+            entity.setWorkResult(workResult);
+        }
+        if (this.workOrderId != null) {
+            WorkOrderEntity workOrder = new WorkOrderEntity();
+            workOrder.setWorkOrderId(this.workOrderId);
+            entity.setWorkOrder(workOrder);
+        }
+        if (this.employeeId != null) {
+            Employee employee = new Employee();
+            employee.setEmployeeId(this.employeeId);
+            entity.setEmployee(employee);
+        }
+
+        // Material은 ManyToOne 제거 → 단순 ID
+        entity.setMaterialId(this.materialId);
 
         return entity;
     }
@@ -74,19 +72,20 @@ public class MaterialInputDto {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
 
-        // 각 연관 객체에서 ID를 추출하여 DTO에 설정 (null 체크 포함)
+        // WorkResult, WorkOrder, Employee는 그대로 ManyToOne에서 ID 추출
         if (entity.getWorkResult() != null) {
             dto.setResultId(entity.getWorkResult().getResultId());
         }
         if (entity.getWorkOrder() != null) {
             dto.setWorkOrderId(entity.getWorkOrder().getWorkOrderId());
         }
-        if (entity.getMaterial() != null) {
-            dto.setMaterialId(entity.getMaterial().getMaterialId());
-        }
         if (entity.getEmployee() != null) {
             dto.setEmployeeId(entity.getEmployee().getEmployeeId());
         }
+
+        // Material은 ManyToOne이 아님 → 단순 컬럼
+        dto.setMaterialId(entity.getMaterialId());
+
 
         return dto;
     }

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/materials-usage")
 @RequiredArgsConstructor
@@ -52,14 +53,14 @@ public class MaterialInputController {
     // ================= 수정 =================
     @PutMapping("/{inputId}")
     public MaterialInputDto update(
-            @PathVariable("inputId") int inputId,
+            @PathVariable("inputId") Integer inputId,
             @RequestBody MaterialInputDto dto) {
         return materialInputService.update(inputId, dto);
     }
 
     // ================= 삭제 =================
     @DeleteMapping("/{inputId}")
-    public void delete(@PathVariable("inputId") int inputId) {
+    public void delete(@PathVariable Integer inputId) {
         materialInputService.delete(inputId);
     }
 }

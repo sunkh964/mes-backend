@@ -14,7 +14,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * JWT를 통해 인증을 처리하는 커스텀 필터.
@@ -26,9 +28,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
 
+    // JWT 검증을 건너뛸 공개 경로 목록을 정의합니다.
+    private static final List<String> EXCLUDE_URLS = Arrays.asList(
+            "/api/auth/login",
+//            "/api/materials-usage",
+            "/api/materials-usage/"
+//            "/api/inventory"
+            //"/api/inventory/"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        // 이 로그가 콘솔에 찍히는지 확인해주세요.
+        System.out.println(">>> JwtAuthenticationFilter 실행: " + request.getRequestURI());
+
 
         // 1. HTTP 요청 헤더에서 JWT 토큰 추출
         String bearerToken = request.getHeader("Authorization");
@@ -59,6 +74,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 특정 경로에 대해 필터를 적용하지 않도록 설정.
+     * EXCLUDE_URLS에 포함된 경로는 이 필터를 건너뜁니다.
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return EXCLUDE_URLS.stream().anyMatch(path::startsWith);
     }
 
     /**
