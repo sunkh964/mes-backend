@@ -24,9 +24,11 @@ public class MaterialInputEntity {
     @JoinColumn(name = "work_order_id")
     private WorkOrderEntity workOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id", nullable = false)
-    private MaterialEntity material;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "material_id", nullable = false)
+//    private MaterialEntity material;
+    @Column(name = "material_id")
+    private Integer materialId;   // 단순 FK (ERP material_id 참조)
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;

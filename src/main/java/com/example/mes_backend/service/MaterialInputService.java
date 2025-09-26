@@ -1,15 +1,16 @@
 package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.MaterialInputDto;
+import com.example.mes_backend.dto.StockRequestDto;
 import com.example.mes_backend.entity.*;
 import com.example.mes_backend.repository.MaterialInputRepository;
-import com.example.mes_backend.repository.MaterialRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,11 +21,17 @@ import java.util.List;
 public class MaterialInputService {
 
     private final MaterialInputRepository materialInputRepository;
-    private final MaterialRepository materialRepository;
+//    private final MaterialRepository materialRepository;
+
+    private final RestTemplate restTemplate; // ERP API 호출용
 
 
     @PersistenceContext   // PA가 자동으로 주입
     private EntityManager entityManager;
+
+    //private final String ERP_BASE_URL = "http://localhost:8081/api/inventory";
+    private final String ERP_BASE_URL = "http://localhost:8081";
+
 
     // 전체 조회
     public List<MaterialInputDto> findAll() {
@@ -106,10 +113,10 @@ public class MaterialInputService {
             entity.setWorkOrder(workOrder);
         }
 
-        // Material FK 연결 (재고 차감 로직 때문에 실제 조회)
-        MaterialEntity material = materialRepository.findById(dto.getMaterialId())
-                .orElseThrow(() -> new IllegalArgumentException("자재 없음: " + dto.getMaterialId()));
-        entity.setMaterial(material);
+//        // Material FK 연결 (재고 차감 로직 때문에 실제 조회)
+//        MaterialEntity material = materialRepository.findById(dto.getMaterialId())
+//                .orElseThrow(() -> new IllegalArgumentException("자재 없음: " + dto.getMaterialId()));
+//        entity.setMaterial(material);
 
         // Employee FK 연결
         if (dto.getEmployeeId() != null) {
@@ -117,13 +124,9 @@ public class MaterialInputService {
             entity.setEmployee(employee);
         }
 
-        // 재고 차감
-        int stock = material.getCurrentStock() != null ? material.getCurrentStock() : 0;
-        if (stock < dto.getQuantity()) {
-            throw new IllegalStateException("재고 부족: 현재 재고=" + stock + ", 요청=" + dto.getQuantity());
-        }
-        material.setCurrentStock(stock - dto.getQuantity());
-        materialRepository.save(material);
+        // ERP API 호출 - 재고 차감
+        StockRequestDto req = new StockRequestDto(dto.getMaterialId(), dto.getWarehouse(), dto.getLocation(), dto.getQuantity());
+        restTemplate.postForEntity(ERP_BASE_URL + "/api/inventory/deduct", req, Void.class);
 
         MaterialInputEntity saved = materialInputRepository.save(entity);
         return MaterialInputDto.fromEntity(saved);
@@ -135,21 +138,27 @@ public class MaterialInputService {
         MaterialInputEntity existing = materialInputRepository.findById(inputId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 투입 내역을 찾을 수 없습니다. ID=" + inputId));
 
-        // --- 기존 수량을 재고에 복구 ---
-        MaterialEntity material = materialRepository.findById(existing.getMaterial().getMaterialId())
-                .orElseThrow(() -> new IllegalArgumentException("자재를 찾을 수 없습니다. ID=" + existing.getMaterial().getMaterialId()));
+        int oldQty = existing.getQuantity();
+        int newQty = dto.getQuantity();
+        int diff = newQty - oldQty;
 
-        int currentStock = material.getCurrentStock() != null ? material.getCurrentStock() : 0;
-        material.setCurrentStock(currentStock + existing.getQuantity()); // 원래 수량 복구
-
-        // --- 새 수량 차감 ---
-        if (material.getCurrentStock() < dto.getQuantity()) {
-            throw new IllegalStateException("재고 부족: 현재 재고=" + material.getCurrentStock() + ", 요청 수량=" + dto.getQuantity());
+        // ERP 연동 (차이만큼 증/차감)
+        if (diff > 0) {
+            // 더 많이 사용 → ERP 차감
+            StockRequestDto req = new StockRequestDto(dto.getMaterialId(), dto.getWarehouse(), dto.getLocation(), diff);
+            restTemplate.postForEntity(ERP_BASE_URL + "/api/inventory/deduct", req, Void.class);
+        } else if (diff < 0) {
+            // 덜 사용 → ERP 복구
+            StockRequestDto req = new StockRequestDto(dto.getMaterialId(), dto.getWarehouse(), dto.getLocation(), Math.abs(diff));
+            restTemplate.postForEntity(ERP_BASE_URL + "/api/inventory/restore", req, Void.class);
         }
-        material.setCurrentStock(material.getCurrentStock() - dto.getQuantity());
-        materialRepository.save(material);
 
-        // --- 엔티티 값 갱신 ---
+//        // ERP API 호출 - 재고 수정
+//        StockRequestDto req = new StockRequestDto(dto.getMaterialId(), dto.getWarehouse(), dto.getLocation(), dto.getQuantity());
+//        restTemplate.put(ERP_BASE_URL + "/api/inventory/update", req);
+
+        // 엔티티 값 갱신
+        existing.setQuantity(dto.getQuantity());
         existing.setQuantity(dto.getQuantity());
         existing.setUnit(dto.getUnit());
         existing.setWarehouse(dto.getWarehouse());
@@ -161,20 +170,27 @@ public class MaterialInputService {
         return MaterialInputDto.fromEntity(updated);
     }
 
-    // ========= 삭제
+    // ================= 삭제 =================
     @Transactional
     public void delete(Integer inputId) {
         MaterialInputEntity existing = materialInputRepository.findById(inputId)
-                .orElseThrow(() -> new IllegalArgumentException("삭제할 투입 내역이 없습니다. ID=" + inputId));
+                .orElseThrow(() -> new IllegalArgumentException("삭제할 투입 내역 없음. ID=" + inputId));
 
-        // 재고 되돌리기 (삭제 시 투입한 수량만큼 다시 재고 증가)
-        MaterialEntity material = materialRepository.findById(existing.getMaterial().getMaterialId())
-                .orElseThrow(() -> new IllegalArgumentException("자재를 찾을 수 없습니다. ID=" + existing.getMaterial().getMaterialId()));
+        // ERP API 호출 - 재고 복구
+        try {
+            StockRequestDto req = new StockRequestDto(
+                    existing.getMaterialId(),   // 이제 단순 ID
+                    existing.getWarehouse(),
+                    existing.getLocation(),
+                    existing.getQuantity()
+            );
+            restTemplate.postForEntity(ERP_BASE_URL + "/api/inventory/restore", req, Void.class);
 
-        int currentStock = material.getCurrentStock() != null ? material.getCurrentStock() : 0;
-        material.setCurrentStock(currentStock + existing.getQuantity());
-        materialRepository.save(material);
+            materialInputRepository.deleteById(inputId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException("ERP 재고 복구 실패. 삭제 중단", e);
+        }
 
-        materialInputRepository.delete(existing);
     }
 }

@@ -36,9 +36,12 @@ public class QualityControlEntity {
     private WorkOrderEntity workOrderId;
 
     // 자재 (MaterialEntity와 관계 매핑)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id", nullable = false)
-    private MaterialEntity materialId;
+    @Column(name = "material_id", nullable = false)
+    private Integer materialId;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "material_id", nullable = false)
+//    private MaterialEntity materialId;
 
     // 검사자 (Employee Entity와 관계 매핑)
     @ManyToOne(fetch = FetchType.LAZY)

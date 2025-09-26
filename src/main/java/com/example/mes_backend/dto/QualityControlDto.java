@@ -55,11 +55,13 @@ public class QualityControlDto {
             wo.setWorkOrderId(workOrderId);
             entity.setWorkOrderId(wo);
         }
-        if (materialId != null) {
-            MaterialEntity material = new MaterialEntity();
-            material.setMaterialId(materialId);
-            entity.setMaterialId(material);
-        }
+        //  materialId는 단순 값이므로 엔티티 생성 X
+        entity.setMaterialId(materialId);
+//        if (materialId != null) {
+//            MaterialEntity material = new MaterialEntity();
+//            material.setMaterialId(materialId);
+//            entity.setMaterialId(material);
+//        }
         if (inspectorId != null) {
             Employee inspector = new Employee();
             inspector.setEmployeeId(inspectorId);
@@ -90,9 +92,11 @@ public class QualityControlDto {
         if (entity.getWorkOrderId() != null) {
             dto.setWorkOrderId(entity.getWorkOrderId().getWorkOrderId());
         }
-        if (entity.getMaterialId() != null) {
-            dto.setMaterialId(entity.getMaterialId().getMaterialId());
-        }
+        // materialId는 단순 값이므로 바로 매핑
+        dto.setMaterialId(entity.getMaterialId());
+//        if (entity.getMaterialId() != null) {
+//            dto.setMaterialId(entity.getMaterialId().getMaterialId());
+//        }
         if (entity.getInspectorId() != null) {
             dto.setInspectorId(entity.getInspectorId().getEmployeeId());
         }
