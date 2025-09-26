@@ -76,4 +76,10 @@ public class QualityControlController {
     ) {
         return qualityControlService.update(qcId, dto);
     }
+
+    /** ERP가 동기화를 위해 호출하는 엔드포인트 */
+    @GetMapping("/completed-for-erp")
+    public List<QualityControlDto> getCompletedQcForErp() {
+        return qualityControlService.getCompletedQcForErp();
+    }
 }

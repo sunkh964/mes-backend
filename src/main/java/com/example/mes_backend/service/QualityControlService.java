@@ -157,4 +157,12 @@ public class QualityControlService {
         qualityControlRepository.deleteById(qcId);
     }
 
+    /** ERP 동기화를 위해, 완료된 품질검사 목록을 조회하는 메서드 */
+    public List<QualityControlDto> getCompletedQcForErp() {
+        // "PENDING"이 아닌 "PASS" 또는 "FAIL" 상태의 모든 QC 결과를 조회
+        return qualityControlRepository.findByResultNot("PENDING").stream()
+                .map(QualityControlDto::fromEntity)
+                .toList();
+    }
+
 }
