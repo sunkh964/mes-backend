@@ -35,7 +35,7 @@ public class QualityControlController {
 
     //단건 조회
     @GetMapping("/{qualityControlId}")
-    public QualityControlDto getById(Integer qualityControlId){
+    public QualityControlDto getById(@PathVariable Integer qualityControlId){
         return qualityControlService.getById(qualityControlId);
     }
 

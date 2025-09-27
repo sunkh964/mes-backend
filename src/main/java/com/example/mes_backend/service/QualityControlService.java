@@ -1,6 +1,7 @@
 package com.example.mes_backend.service;
 
 import com.example.mes_backend.dto.QualityControlDto;
+import com.example.mes_backend.dto.SimpleStockRequestDto;
 import com.example.mes_backend.entity.QualityControlEntity;
 import com.example.mes_backend.repository.EmployeeRepository;
 import com.example.mes_backend.repository.PurchaseOrderRepository;
@@ -10,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ public class QualityControlService {
     private final QualityControlRepository qualityControlRepository;
     private final EmployeeRepository employeeRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final RestTemplate restTemplate;
 
     //erp에서 웹훅으로 들어온 검사 요청을 저장
 //    @Transactional
@@ -151,11 +154,35 @@ public class QualityControlService {
     // 삭제
     @Transactional
     public void delete(Integer qcId) {
-        if (!qualityControlRepository.existsById(qcId)) {
-            throw new IllegalArgumentException("삭제할 품질검사 내역이 존재하지 않습니다: " + qcId);
+        // 1. 삭제할 QC 엔티티를 먼저 조회합니다.
+        QualityControlEntity entityToDelete = qualityControlRepository.findById(qcId)
+                .orElseThrow(() -> new IllegalArgumentException("삭제할 품질검사 내역이 없습니다: " + qcId));
+
+        // 2. 해당 QC가 'PASS'였고 합격수량이 있었다면, ERP 재고 복구를 시도합니다.
+        if ("PASS".equalsIgnoreCase(entityToDelete.getResult()) && entityToDelete.getPassQuantity() > 0) {
+
+            // 3. ERP에 보낼 DTO를 생성합니다.
+            SimpleStockRequestDto requestDto = new SimpleStockRequestDto();
+            requestDto.setMaterialId(entityToDelete.getMaterialId());
+            requestDto.setQuantity(entityToDelete.getPassQuantity()); // 복구할 수량은 합격수량
+
+            try {
+                // 4. ERP의 새 재고 복구 API를 호출합니다.
+                String erpApiUrl = "http://localhost:8081/api/inventory/restore-by-material";
+                restTemplate.postForEntity(erpApiUrl, requestDto, Void.class);
+                log.info("ERP 재고 복구 요청 성공 (QC ID: {})", qcId);
+
+            } catch (Exception e) {
+                log.error("ERP 재고 복구 요청 실패. MES 삭제 작업을 중단합니다. (QC ID: {}): {}", qcId, e.getMessage());
+                // ERP 통신에 실패하면 MES 데이터도 삭제하지 않고 예외를 발생시켜 롤백합니다.
+                throw new IllegalStateException("ERP 재고 복구에 실패하여 삭제할 수 없습니다.", e);
+            }
         }
+
+        // 5. ERP 재고 복구가 필요 없거나, 성공적으로 완료된 경우에만 MES DB에서 최종 삭제합니다.
         qualityControlRepository.deleteById(qcId);
     }
+
 
     /** ERP 동기화를 위해, 완료된 품질검사 목록을 조회하는 메서드 */
     public List<QualityControlDto> getCompletedQcForErp() {
