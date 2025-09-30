@@ -2,6 +2,8 @@ package com.example.mes_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,22 +33,26 @@ public class ProjectPlanEntity {
     @Column(name = "status")
     private Integer status;
 
+    // 추가 최종 버전 여부
+    @Column(name = "is_final")
+    private Boolean isFinal = false;
+
     @Column(name = "remark", length = 255)
     private String remark;
 
-    @Column(name = "created_at", updatable = false, insertable = false,
-            columnDefinition = "datetime default current_timestamp")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", insertable = false,
-            columnDefinition = "datetime on update current_timestamp")
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "project_id", nullable = false)
     private ProjectEntity project;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vessel_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "vessel_id", nullable = false)
     private VesselEntity vessel;
 }

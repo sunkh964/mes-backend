@@ -13,14 +13,14 @@ public interface WorkOrderRepository
                 JpaSpecificationExecutor<WorkOrderEntity> {
 
     // WorkCenter + Process 까지 한 번에 로딩
-    @Query("""
-    SELECT wo 
-    FROM WorkOrderEntity wo
-    LEFT JOIN FETCH wo.workCenter wc
-    LEFT JOIN FETCH wc.process p
-    LEFT JOIN FETCH wo.employee e
-    LEFT JOIN FETCH wo.equipment eq
-    """)
+    @Query("SELECT wo FROM WorkOrderEntity wo " +
+            "LEFT JOIN FETCH wo.process " +
+            "LEFT JOIN FETCH wo.blockPlan " +
+            "LEFT JOIN FETCH wo.block " +
+            "LEFT JOIN FETCH wo.workCenter wc " +
+            "LEFT JOIN FETCH wo.equipment " +
+            "LEFT JOIN FETCH wo.employee " +
+            "LEFT JOIN FETCH wc.process")
     List<WorkOrderEntity> findAllWithRelations();
 
 }

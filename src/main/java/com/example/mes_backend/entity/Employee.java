@@ -48,7 +48,7 @@ public class Employee {
 
     // 역할(권한)
     @Column(name = "role", length = 255, nullable = false)
-    private String role; // 예: "ROLE_ADMIN", "ROLE_MANAGER", "ROLE_WORKER"
+    private String role; // 예: "ADMIN", "MANAGER", "WORKER"
 
     // 생성 일시 (자동 설정, DB에서 CURRENT_TIMESTAMP 사용)
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", updatable = false, insertable = false)

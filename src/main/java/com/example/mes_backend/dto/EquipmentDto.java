@@ -13,6 +13,7 @@ public class EquipmentDto {
     private String equipmentType;
     private String workCenterId; // Entity의 WorkCenterEntity 객체를 String ID로 표현
     private Integer capacity;
+    private String capacityUnit;   // EA, m, m², TON 등
     private Boolean isActive;
     private String remark;
     private LocalDateTime createdAt;
@@ -25,6 +26,7 @@ public class EquipmentDto {
         entity.setEquipmentNm(this.equipmentNm);
         entity.setEquipmentType(this.equipmentType);
         entity.setCapacity(this.capacity);
+        entity.setCapacityUnit(this.capacityUnit);
         entity.setIsActive(this.isActive);
         entity.setRemark(this.remark);
 
@@ -45,6 +47,7 @@ public class EquipmentDto {
         dto.setEquipmentNm(entity.getEquipmentNm());
         dto.setEquipmentType(entity.getEquipmentType());
         dto.setCapacity(entity.getCapacity());
+        dto.setCapacityUnit(entity.getCapacityUnit());
         dto.setIsActive(entity.getIsActive());
         dto.setRemark(entity.getRemark());
 
