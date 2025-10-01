@@ -39,8 +39,14 @@ public class ProjectEntity {
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode = "KRW";
 
-    @Column(name = "progress_rate", precision = 5, scale = 2, nullable = false)
+    @Column(name = "progress_rate", precision = 5, scale = 2)
     private BigDecimal progressRate = BigDecimal.ZERO;
+
+    @Column(name = "status")
+    private Integer status;   // 0:계획, 1: 진행 중, 2: 완료
+
+    @Column(name = "is_final")
+    private Boolean isFinal;
 
     @Column(name = "priority", nullable = false)
     private Integer priority;

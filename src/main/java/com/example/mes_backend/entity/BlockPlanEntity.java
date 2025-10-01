@@ -40,7 +40,7 @@ public class BlockPlanEntity {
     private LocalDate endDate;
 
     @Column(name = "status")
-    private Integer status;
+    private Integer status;  // 0:대기, 1: 진행중, 2: 완료
 
     @Column(name = "remark", length = 255)
     private String remark;

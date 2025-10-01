@@ -77,7 +77,7 @@ public class WorkOrderEntity {
 
     // 현재 상태
     @Column(name = "current_status", length = 20)
-    private String currentStatus = "waiting";
+    private String currentStatus = "waiting";  // "waiting", "in-progress", "completed"
 
     // 우선순위
     @Column(name = "priority")

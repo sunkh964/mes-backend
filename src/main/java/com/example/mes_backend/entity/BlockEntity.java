@@ -24,7 +24,7 @@ public class BlockEntity {
     @Column(name = "block_nm", nullable = false, length = 50)
     private String blockNm;
 
-    // 블록 종류 (예: 측면, 바닥 등)
+    // 블록 종류 (예: 선수, 중앙부, 선미)
     @Column(name = "block_type", length = 20)
     private String blockType;
 
