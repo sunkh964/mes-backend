@@ -9,12 +9,12 @@
 //public class MaterialDto {
 //
 //    private Integer materialId;
+//    private String materialCode;
 //    private String materialNm;
 //    private String category;
 //    private String specification;
 //    private String unit;
 //    private Double unitPrice;
-//    private Integer currentStock;
 //    private String warehouse;
 //    private String location;
 //    private String remark;
@@ -25,12 +25,12 @@
 //    public MaterialEntity toEntity() {
 //        MaterialEntity entity = new MaterialEntity();
 //        entity.setMaterialId(this.materialId);
+//        entity.setMaterialCode(this.materialCode);
 //        entity.setMaterialNm(this.materialNm);
 //        entity.setCategory(this.category);
 //        entity.setSpecification(this.specification);
 //        entity.setUnit(this.unit);
 //        entity.setUnitPrice(this.unitPrice);
-//        entity.setCurrentStock(this.currentStock);
 //        entity.setWarehouse(this.warehouse);
 //        entity.setLocation(this.location);
 //        entity.setRemark(this.remark);
@@ -41,12 +41,12 @@
 //    public static MaterialDto fromEntity(MaterialEntity entity) {
 //        MaterialDto dto = new MaterialDto();
 //        dto.setMaterialId(entity.getMaterialId());
+//        dto.setMaterialCode(entity.getMaterialCode());
 //        dto.setMaterialNm(entity.getMaterialNm());
 //        dto.setCategory(entity.getCategory());
 //        dto.setSpecification(entity.getSpecification());
 //        dto.setUnit(entity.getUnit());
 //        dto.setUnitPrice(entity.getUnitPrice());
-//        dto.setCurrentStock(entity.getCurrentStock());
 //        dto.setWarehouse(entity.getWarehouse());
 //        dto.setLocation(entity.getLocation());
 //        dto.setRemark(entity.getRemark());

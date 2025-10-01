@@ -29,6 +29,9 @@ public class EquipmentEntity {
     @Column(name = "capacity")
     private Integer capacity;
 
+    @Column(name = "capacity_unit", length = 20)
+    private String capacityUnit;   // EA, m, m², TON 등
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

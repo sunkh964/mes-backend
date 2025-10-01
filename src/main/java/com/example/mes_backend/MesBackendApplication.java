@@ -24,26 +24,26 @@ public class MesBackendApplication {
 	public CommandLineRunner initData(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
 		return (args) -> {
 			// 이미 존재하는 계정인지 확인하여 중복 삽입 방지
-			if (employeeRepository.findByEmployeeId("worker01").isEmpty()) {
+			if (employeeRepository.findByEmployeeId("E1005").isEmpty()) {
 				Employee worker = new Employee();
-				worker.setEmployeeId("worker01");
-				worker.setEmployeeNm("김작업");
+				worker.setEmployeeId("E1005");
+				worker.setEmployeeNm("이생산");
 
 				// 필수 필드들 설정
-				worker.setDepartmentId(1);              // 예: 1번 부서 (존재하는 부서 ID여야 함)
-				worker.setPositionId(1);                // 예: 1번 직책 (존재하는 포지션 ID여야 함)
+				worker.setDepartmentId(2);              // 예: 1번 부서 (존재하는 부서 ID여야 함)
+				worker.setPositionId(2);                // 예: 1번 직책 (존재하는 포지션 ID여야 함)
 				worker.setHireDate(Date.valueOf("2023-01-01")); // java.sql.Date 로 설정
 				worker.setPassword(passwordEncoder.encode("1234"));
 				worker.setRole("WORKER");
 
 				employeeRepository.save(worker);
-				System.out.println("테스트 계정 'worker01'이 생성되었습니다.");
+				System.out.println("테스트 계정 'E1005'이 생성되었습니다.");
 			}
 
-            if (employeeRepository.findByEmployeeId("admin01").isEmpty()) {
+            if (employeeRepository.findByEmployeeId("E1001").isEmpty()) {
                 Employee worker = new Employee();
-                worker.setEmployeeId("admin01");
-                worker.setEmployeeNm("이검사");
+                worker.setEmployeeId("E1001");
+                worker.setEmployeeNm("김설계");
 
                 // 필수 필드들 설정
                 worker.setDepartmentId(1);              // 예: 1번 부서 (존재하는 부서 ID여야 함)
@@ -53,7 +53,7 @@ public class MesBackendApplication {
                 worker.setRole("ADMIN");
 
                 employeeRepository.save(worker);
-                System.out.println("테스트 계정 'admin01'이 생성되었습니다.");
+                System.out.println("테스트 계정 'E1001'이 생성되었습니다.");
             }
 		};
 	}

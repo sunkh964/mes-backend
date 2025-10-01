@@ -18,9 +18,13 @@ public class BlockPlanEntity {
     @Column(name = "block_plan_id", nullable = false)
     private Integer blockPlanId;
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "vessel_id")
+//    private VesselEntity vesselEntity;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vessel_id")
-    private VesselEntity vesselEntity;
+    @JoinColumn(name = "plan_id")
+    private ProjectPlanEntity projectPlanEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_id")

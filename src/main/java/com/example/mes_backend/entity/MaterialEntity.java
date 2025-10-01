@@ -17,6 +17,9 @@
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    @Column(name = "material_id")
 //    private Integer materialId;
+
+//@Column(name = "material_code", nullable = false, unique = true, length = 50)
+//private String materialCode;   // 비즈니스 자재코드 (ex: MT-STEEL-001)
 //
 //    @Column(name = "material_nm", nullable = false, length = 50)
 //    private String materialNm;
@@ -41,9 +44,6 @@
 //
 //    @Column(name = "max_stock_quantity", nullable = false)
 //    private Integer maxStockQuantity;
-//
-//    @Column(name = "current_stock")
-//    private Integer currentStock;
 //
 //    @Column(name = "lead_time")
 //    private Integer leadTime;

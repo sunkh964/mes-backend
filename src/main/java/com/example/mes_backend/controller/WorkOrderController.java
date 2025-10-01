@@ -1,6 +1,14 @@
 package com.example.mes_backend.controller;
 
-import com.example.mes_backend.dto.WorkOrderDto;
+
+import com.example.mes_backend.dto.*;
+import com.example.mes_backend.entity.BlockEntity;
+import com.example.mes_backend.entity.BlockPlanEntity;
+import com.example.mes_backend.entity.Employee;
+import com.example.mes_backend.entity.EquipmentEntity;
+import com.example.mes_backend.entity.ProcessEntity;
+import com.example.mes_backend.entity.WorkCenterEntity;
+import com.example.mes_backend.repository.*;
 import com.example.mes_backend.service.WorkOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,6 +23,12 @@ import java.util.List;
 public class WorkOrderController {
 
     private final WorkOrderService workOrderService;
+    private final ProcessRepository processRepository;
+    private final BlockRepository blockRepository;
+    private final BlockPlanRepository blockPlanRepository;
+    private final WorkCenterRepository workCenterRepository;
+    private final EquipmentRepository equipmentRepository;
+    private final EmployeeRepository employeeRepository;
 
     // 전체 조회
     @GetMapping
@@ -70,5 +84,36 @@ public class WorkOrderController {
     @DeleteMapping("/{workOrderId}")
     public void deleteWorkOrder(@PathVariable int workOrderId) {
         workOrderService.delete(workOrderId);
+    }
+
+    // === 콤보박스 데이터 제공 ===
+    @GetMapping("/processes")
+    public List<ProcessDto> getProcesses() {
+        return workOrderService.getAllProcesses();
+    }
+
+    @GetMapping("/blocks")
+    public List<BlockDto> getBlocks() {
+        return workOrderService.getAllBlocks();
+    }
+
+    @GetMapping("/blockPlans")
+    public List<BlockPlanDto> getBlockPlans() {
+        return workOrderService.getAllBlockPlans();
+    }
+
+    @GetMapping("/workCenters")
+    public List<WorkCenterDto> getWorkCenters() {
+        return workOrderService.getAllWorkCenters();
+    }
+
+    @GetMapping("/equipments")
+    public List<EquipmentDto> getEquipments() {
+        return workOrderService.getAllEquipments();
+    }
+
+    @GetMapping("/employees")
+    public List<EmployeeDto> getEmployees() {
+        return workOrderService.getAllEmployees();
     }
 }

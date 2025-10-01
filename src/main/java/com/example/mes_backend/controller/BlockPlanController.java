@@ -1,9 +1,6 @@
 package com.example.mes_backend.controller;
 
-import com.example.mes_backend.dto.BlockPlanDto;
-import com.example.mes_backend.dto.ProcessDto;
-import com.example.mes_backend.dto.QualityControlDto;
-import com.example.mes_backend.dto.WorkCenterDto;
+import com.example.mes_backend.dto.*;
 import com.example.mes_backend.service.BlockPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,14 +28,14 @@ public class BlockPlanController {
     public List<BlockPlanDto> searchBlockPlans(
             @RequestParam(required = false) String blockId,
             @RequestParam(required = false) String processId,
-            @RequestParam(required = false) String vesselId,
+            @RequestParam(required = false) String planId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String status
     ) {
-        return blockPlanService.search(blockId, processId, vesselId, startDate, endDate, status);
+        return blockPlanService.search(blockId, processId, planId, startDate, endDate, status);
     }
 
     // ============= 등록 =================
@@ -64,6 +61,18 @@ public class BlockPlanController {
         return blockPlanService.update(blockPlanId, dto);
     }
 
+    // ============= 콤보박스 데이터 =================
+    // 공정 목록
+    @GetMapping("/processes")
+    public List<ProcessDto> getProcesses() {
+        return blockPlanService.getAllProcesses();
+    }
+
+    // 블록 목록
+    @GetMapping("/blocks")
+    public List<BlockDto> getBlocks() {
+        return blockPlanService.getAllBlocks();
+    }
 
 
 }

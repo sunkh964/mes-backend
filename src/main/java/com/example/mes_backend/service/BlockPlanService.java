@@ -1,9 +1,11 @@
 package com.example.mes_backend.service;
 
+import com.example.mes_backend.dto.BlockDto;
 import com.example.mes_backend.dto.BlockPlanDto;
 import com.example.mes_backend.dto.ProcessDto;
 import com.example.mes_backend.entity.*;
 import com.example.mes_backend.repository.*;
+import jakarta.persistence.criteria.Join;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class BlockPlanService {
 
     private final BlockPlanRepository blockPlanRepository;
     private final VesselRepository vesselRepository;
+    private final ProjectPlanRepository projectPlanRepository;
     private final ProcessRepository processRepository;
     private final BlockRepository blockRepository;
     private final WorkOrderRepository workOrderRepository;
@@ -48,10 +51,24 @@ public class BlockPlanService {
     // 조건 검색 (모든 조건을 부분검색)
     public List<BlockPlanDto> search(String blockId,
                                      String processId,
-                                     String vesselId,
+                                     String planId,
                                      LocalDate startDate,
                                      LocalDate endDate,
                                      String status) {
+
+        // planId만 넘어온 경우는 fetch join 버전 사용
+        if (planId != null && !planId.isBlank()
+                && (blockId == null || blockId.isBlank())
+                && (processId == null || processId.isBlank())
+                && startDate == null && endDate == null
+                && (status == null || status.isBlank())) {
+            return blockPlanRepository.findByPlanIdWithJoins(planId)
+                    .stream()
+                    .map(BlockPlanDto::fromEntity)
+                    .toList();
+        }
+
+        // 조건이 섞여 있을 때는 기존 CriteriaBuilder 사용
 
         return blockPlanRepository.findAll((root, query, cb) -> {
                     List<Predicate> predicates = new ArrayList<>();
@@ -68,10 +85,10 @@ public class BlockPlanService {
                         predicates.add(cb.like(cb.lower(root.get("process").get("processId").as(String.class)), p, '\\'));
                     }
 
-                    // 선박 ID (부분검색)
-                    if (vesselId != null && !vesselId.isBlank()) {
-                        String p = likePattern(vesselId);
-                        predicates.add(cb.like(cb.lower(root.get("vessel").get("vesselId").as(String.class)), p, '\\'));
+                    // 프로젝트 생산계획 ID (join 사용)
+                    if (planId != null && !planId.isBlank()) {
+                        Join<BlockPlanEntity, ProjectPlanEntity> projectPlanJoin = root.join("projectPlanEntity");
+                        predicates.add(cb.equal(projectPlanJoin.get("planId"), planId));
                     }
 
                     // 시작일 (>=)
@@ -105,20 +122,20 @@ public class BlockPlanService {
         // 저장
         BlockPlanEntity saved = blockPlanRepository.save(entity);
 
-        // === WorkOrder 자동 생성 ===
-        WorkOrderEntity wo = new WorkOrderEntity();
-        wo.setProcess(saved.getProcess());
-        wo.setBlockPlan(saved);
-        wo.setBlock(saved.getBlockEntity());
-        wo.setQuantityToProduce(saved.getPlanQty());
-        wo.setQuantityProduced(0);
-        wo.setPlannedStartTime(saved.getStartDate().atStartOfDay());
-        wo.setPlannedEndTime(saved.getEndDate().atTime(23, 59, 59));
-        wo.setCurrentStatus("waiting");
-        wo.setPriority(0);
-        wo.setRemark("BlockPlan 기반 자동 생성");
-
-        workOrderRepository.save(wo);
+//        // === WorkOrder 자동 생성 ===
+//        WorkOrderEntity wo = new WorkOrderEntity();
+//        wo.setProcess(saved.getProcess());
+//        wo.setBlockPlan(saved);
+//        wo.setBlock(saved.getBlockEntity());
+//        wo.setQuantityToProduce(saved.getPlanQty());
+//        wo.setQuantityProduced(0);
+//        wo.setPlannedStartTime(saved.getStartDate().atStartOfDay());
+//        wo.setPlannedEndTime(saved.getEndDate().atTime(23, 59, 59));
+//        wo.setCurrentStatus("waiting");
+//        wo.setPriority(0);
+//        wo.setRemark("BlockPlan 기반 자동 생성");
+//
+//        workOrderRepository.save(wo);
 
         return BlockPlanDto.fromEntity(saved);
     }
@@ -137,8 +154,11 @@ public class BlockPlanService {
         return blockPlanRepository.findById(blockPlanId)
                 .map(entity -> {
                     // FK 매핑된 엔티티 조회
-                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
-                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+//                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
+//                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
+
+                    ProjectPlanEntity projectPlan = projectPlanRepository.findById(dto.getPlanId())
+                            .orElseThrow(() -> new IllegalArgumentException("프로젝트 생산 계획이 존재하지 않습니다: " + dto.getPlanId()));
 
                     ProcessEntity process = processRepository.findById(dto.getProcessId())
                             .orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다: " + dto.getProcessId()));
@@ -147,7 +167,8 @@ public class BlockPlanService {
                             .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다: " + dto.getBlockId()));
 
                     // 연관 엔티티 세팅
-                    entity.setVesselEntity(vessel);
+//                    entity.setVesselEntity(vessel);
+                    entity.setProjectPlanEntity(projectPlan);
                     entity.setProcess(process);
                     entity.setBlockEntity(block);
 
@@ -162,6 +183,24 @@ public class BlockPlanService {
                 })
                 .orElseThrow(() -> new IllegalArgumentException("수정할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId));
     }
+
+
+    // 콤보박스
+    public List<ProcessDto> getAllProcesses() {
+        return processRepository.findAll()
+                .stream()
+                .map(ProcessDto::fromEntity)
+                .toList();
+    }
+
+    public List<BlockDto> getAllBlocks() {
+        return blockRepository.findAll()
+                .stream()
+                .map(BlockDto::fromEntity)
+                .toList();
+    }
+
+
 
 
 

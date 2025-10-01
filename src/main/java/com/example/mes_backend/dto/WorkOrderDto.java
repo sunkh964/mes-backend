@@ -12,14 +12,22 @@ public class WorkOrderDto {
     private Integer workOrderId;
 
     private String processId;
+    private String processNm;      // 공정명 (조회 전용)
+
     private Integer blockPlanId;
     private Integer blockId;
+    private String blockNm;        // 블록명 (조회 전용)
+
     private String workCenterId;
+    private String workCenterNm;   // 작업장명 (조회 전용)
+
     private String equipmentId;
+    private String equipmentNm;    // 설비명 (조회 전용)
 
     private Integer processStandardTime;
 
     private String employeeId;
+    private String employeeNm;     // 직원명 (조회 전용)
 
     private String instruction;
 
@@ -54,19 +62,16 @@ public class WorkOrderDto {
         workOrder.setWorkOrderId(this.workOrderId);
         workOrder.setInstruction(this.instruction);
         workOrder.setQuantityToProduce(this.quantityToProduce);
-        workOrder.setQuantityProduced(this.quantityProduced);
+        workOrder.setQuantityProduced(this.quantityProduced != null ? this.quantityProduced : 0);
         workOrder.setPlannedStartTime(this.plannedStartTime);
         workOrder.setPlannedEndTime(this.plannedEndTime);
         workOrder.setActualStartTime(this.actualStartTime);
         workOrder.setActualEndTime(this.actualEndTime);
-        workOrder.setCurrentStatus(this.currentStatus);
+        workOrder.setCurrentStatus(this.currentStatus != null ? this.currentStatus : "waiting");
         workOrder.setPriority(this.priority);
         workOrder.setRemark(this.remark);
-        workOrder.setCreatedAt(this.createdAt);
-        workOrder.setUpdatedAt(this.updatedAt);
 
-        // 연관 엔티티는 ID만으로 set 불가 → 서비스 레이어에서 주입 필요
-        // 예: processRepository.findById(dto.getProcessId()) 등
+        // 연관 엔티티는 Service에서 세팅 or 껍데기 엔티티 생성 (선택)
         return workOrder;
     }
 
@@ -74,18 +79,41 @@ public class WorkOrderDto {
     public static WorkOrderDto fromEntity(WorkOrderEntity entity) {
         WorkOrderDto dto = new WorkOrderDto();
         dto.setWorkOrderId(entity.getWorkOrderId());
-        dto.setProcessId(entity.getProcess() != null ? entity.getProcess().getProcessId() : null);
-        dto.setBlockPlanId(entity.getBlockPlan() != null ? entity.getBlockPlan().getBlockPlanId() : null);
-        dto.setBlockId(entity.getBlock() != null ? entity.getBlock().getBlockId() : null);
-        dto.setWorkCenterId(entity.getWorkCenter() != null ? entity.getWorkCenter().getWorkCenterId() : null);
-        dto.setEquipmentId(entity.getEquipment() != null ? entity.getEquipment().getEquipmentId() : null);
 
-        // 여기서 공정 표준시간 매핑
-        if (entity.getWorkCenter() != null && entity.getWorkCenter().getProcess() != null) {
-            dto.setProcessStandardTime(entity.getWorkCenter().getProcess().getStandardTime());
+        if (entity.getProcess() != null) {
+            dto.setProcessId(entity.getProcess().getProcessId());
+            dto.setProcessNm(entity.getProcess().getProcessNm());
         }
 
-        dto.setEmployeeId(entity.getEmployee() != null ? entity.getEmployee().getEmployeeId() : null);
+        if (entity.getBlockPlan() != null) {
+            dto.setBlockPlanId(entity.getBlockPlan().getBlockPlanId());
+        }
+
+        if (entity.getBlock() != null) {
+            dto.setBlockId(entity.getBlock().getBlockId());
+            dto.setBlockNm(entity.getBlock().getBlockNm());
+        }
+
+        if (entity.getWorkCenter() != null) {
+            dto.setWorkCenterId(entity.getWorkCenter().getWorkCenterId());
+            dto.setWorkCenterNm(entity.getWorkCenter().getWorkCenterNm());
+        }
+
+        if (entity.getEquipment() != null) {
+            dto.setEquipmentId(entity.getEquipment().getEquipmentId());
+            dto.setEquipmentNm(entity.getEquipment().getEquipmentNm());
+        }
+
+        if (entity.getEmployee() != null) {
+            dto.setEmployeeId(entity.getEmployee().getEmployeeId());
+            dto.setEmployeeNm(entity.getEmployee().getEmployeeNm());
+        }
+
+        // 공정 표준시간
+        if (entity.getProcess() != null) {
+            dto.setProcessStandardTime(entity.getProcess().getStandardTime());
+        }
+
         dto.setInstruction(entity.getInstruction());
         dto.setQuantityToProduce(entity.getQuantityToProduce());
         dto.setQuantityProduced(entity.getQuantityProduced());
@@ -98,8 +126,7 @@ public class WorkOrderDto {
         dto.setRemark(entity.getRemark());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
+
         return dto;
     }
-
-
 }
