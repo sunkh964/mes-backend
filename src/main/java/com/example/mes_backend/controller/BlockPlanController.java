@@ -69,10 +69,9 @@ public class BlockPlanController {
     }
 
     // 블록 목록
-    @GetMapping("/blocks")
-    public List<BlockDto> getBlocks() {
-        return blockPlanService.getAllBlocks();
+    @GetMapping("/blocks/vessel/{vesselId}")
+    public List<BlockDto> getBlocksByVessel(@PathVariable String vesselId) {
+        return blockPlanService.getBlocksByVesselId(vesselId);
     }
-
 
 }

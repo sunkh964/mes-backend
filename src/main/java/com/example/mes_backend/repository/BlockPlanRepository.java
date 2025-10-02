@@ -21,4 +21,5 @@ public interface BlockPlanRepository
             "WHERE bp.projectPlanEntity.planId = :planId")
     List<BlockPlanEntity> findByPlanIdWithJoins(@Param("planId") String planId);
 
+
 }

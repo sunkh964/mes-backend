@@ -193,12 +193,17 @@ public class BlockPlanService {
                 .toList();
     }
 
-    public List<BlockDto> getAllBlocks() {
-        return blockRepository.findAll()
+    public List<BlockDto> getBlocksByVesselId(String vesselId) {
+        if (vesselId == null || vesselId.isBlank()) {
+            return List.of(); // vesselId가 없으면 빈 목록 반환
+        }
+        return blockRepository.findByVesselId(vesselId)
                 .stream()
                 .map(BlockDto::fromEntity)
                 .toList();
     }
+
+
 
 
 
