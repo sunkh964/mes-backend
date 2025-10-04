@@ -22,9 +22,11 @@ public class BlockPlanEntity {
 //    @JoinColumn(name = "vessel_id")
 //    private VesselEntity vesselEntity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id")
-    private ProjectPlanEntity projectPlanEntity;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "plan_id")
+//    private ProjectPlanEntity projectPlanEntity;
+    @Column(name = "plan_id", length = 30)
+    private String planId;   // 단순 FK (ERP projectPlan plan_id 참조)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_id")

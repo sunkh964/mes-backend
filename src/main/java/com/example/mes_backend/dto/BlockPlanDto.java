@@ -43,6 +43,9 @@ public class BlockPlanDto {
     public BlockPlanEntity toEntity(){
         BlockPlanEntity blockPlanEntity = new BlockPlanEntity();
 
+        blockPlanEntity.setBlockPlanId(this.blockPlanId);
+        blockPlanEntity.setPlanId(this.planId);
+
         // ===== 연관관계 매핑 =====
 //        if (this.vesselId != null) {
 //            VesselEntity vessel = new VesselEntity();
@@ -50,11 +53,11 @@ public class BlockPlanDto {
 //            blockPlanEntity.setVesselEntity(vessel);
 //        }
 
-        if (this.planId != null) {
-            ProjectPlanEntity projectPlan = new ProjectPlanEntity();
-            projectPlan.setPlanId(this.planId);  // PK만 세팅
-            blockPlanEntity.setProjectPlanEntity(projectPlan);
-        }
+//        if (this.planId != null) {
+//            ProjectPlanEntity projectPlan = new ProjectPlanEntity();
+//            projectPlan.setPlanId(this.planId);  // PK만 세팅
+//            blockPlanEntity.setProjectPlanEntity(projectPlan);
+//        }
 
         if (this.processId != null) {
             ProcessEntity process = new ProcessEntity();
@@ -83,15 +86,17 @@ public class BlockPlanDto {
     // Entity → DTO 변환
     public static BlockPlanDto fromEntity(BlockPlanEntity entity) {
         BlockPlanDto dto = new BlockPlanDto();
+
         dto.setBlockPlanId(entity.getBlockPlanId());
+        dto.setPlanId(entity.getPlanId());
+
         // Null-safe 처리
 //        if (entity.getVesselEntity() != null) {
 //            dto.setVesselId(entity.getVesselEntity().getVesselId());
 //        }
-
-        if (entity.getProjectPlanEntity() != null) {
-            dto.setPlanId(entity.getProjectPlanEntity().getPlanId());
-        }
+//        if (entity.getProjectPlanEntity() != null) {
+//            dto.setPlanId(entity.getProjectPlanEntity().getPlanId());
+//        }
         if (entity.getProcess() != null) {
             dto.setProcessId(entity.getProcess().getProcessId());
             dto.setProcessNm(entity.getProcess().getProcessNm());

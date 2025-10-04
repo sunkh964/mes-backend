@@ -11,10 +11,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.web.client.RestTemplate;
 
 
 @Slf4j
@@ -24,10 +27,13 @@ public class BlockPlanService {
 
     private final BlockPlanRepository blockPlanRepository;
     private final VesselRepository vesselRepository;
-    private final ProjectPlanRepository projectPlanRepository;
+//    private final ProjectPlanRepository projectPlanRepository;
     private final ProcessRepository processRepository;
     private final BlockRepository blockRepository;
     private final WorkOrderRepository workOrderRepository;
+
+    private final RestTemplate restTemplate; // ✅ API 서버 호출용
+    private final String API_SERVER_URL = "http://localhost:8083/api/projectPlans";
 
     // 전체 조회
     public List<BlockPlanDto> getAll() {
@@ -87,9 +93,13 @@ public class BlockPlanService {
 
                     // 프로젝트 생산계획 ID (join 사용)
                     if (planId != null && !planId.isBlank()) {
-                        Join<BlockPlanEntity, ProjectPlanEntity> projectPlanJoin = root.join("projectPlanEntity");
-                        predicates.add(cb.equal(projectPlanJoin.get("planId"), planId));
+                        predicates.add(cb.equal(root.get("planId"), planId));
                     }
+
+//                    if (planId != null && !planId.isBlank()) {
+//                        Join<BlockPlanEntity, ProjectPlanEntity> projectPlanJoin = root.join("projectPlanEntity");
+//                        predicates.add(cb.equal(projectPlanJoin.get("planId"), planId));
+//                    }
 
                     // 시작일 (>=)
                     if (startDate != null) {
@@ -157,8 +167,8 @@ public class BlockPlanService {
 //                    VesselEntity vessel = vesselRepository.findById(dto.getVesselId())
 //                            .orElseThrow(() -> new IllegalArgumentException("선박이 존재하지 않습니다: " + dto.getVesselId()));
 
-                    ProjectPlanEntity projectPlan = projectPlanRepository.findById(dto.getPlanId())
-                            .orElseThrow(() -> new IllegalArgumentException("프로젝트 생산 계획이 존재하지 않습니다: " + dto.getPlanId()));
+//                    ProjectPlanEntity projectPlan = projectPlanRepository.findById(dto.getPlanId())
+//                            .orElseThrow(() -> new IllegalArgumentException("프로젝트 생산 계획이 존재하지 않습니다: " + dto.getPlanId()));
 
                     ProcessEntity process = processRepository.findById(dto.getProcessId())
                             .orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다: " + dto.getProcessId()));
@@ -168,11 +178,12 @@ public class BlockPlanService {
 
                     // 연관 엔티티 세팅
 //                    entity.setVesselEntity(vessel);
-                    entity.setProjectPlanEntity(projectPlan);
+//                    entity.setProjectPlanEntity(projectPlan);
                     entity.setProcess(process);
                     entity.setBlockEntity(block);
 
                     // 나머지 일반 필드 세팅
+                    entity.setPlanId(dto.getPlanId());
                     entity.setPlanQty(dto.getPlanQty());
                     entity.setStatus(dto.getStatus());
                     entity.setStartDate(dto.getStartDate());
@@ -200,7 +211,34 @@ public class BlockPlanService {
                 .toList();
     }
 
+// ==================================================================
 
+    // 진행률 업데이트 메서드
+    @Transactional
+    public void updateProjectProgress(String planId) {
+        // fetch join 버전 사용
+        List<BlockPlanEntity> blocks = blockPlanRepository.findByPlanIdWithJoins(planId);
+
+        if (blocks.isEmpty()) return;
+
+        long completed = blocks.stream()
+                .filter(bp -> bp.getStatus() != null && bp.getStatus() == 2) // 2=완료
+                .count();
+
+        BigDecimal progressRate = BigDecimal.valueOf(completed * 100.0 / blocks.size())
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 계산되나?
+        log.info("👉 [MES] ProjectPlan({}) 진행률 계산됨 = {}%", planId, progressRate);
+
+        // API 서버 호출 (진행률 반영)
+        try {
+            restTemplate.put(API_SERVER_URL + "/" + planId + "/progress", progressRate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("API 서버로 진행률 업데이트 요청 실패", e);
+        }
+    }
 
 
 

@@ -17,9 +17,7 @@ public interface BlockPlanRepository
     @Query("SELECT bp FROM BlockPlanEntity bp " +
             "JOIN FETCH bp.blockEntity " +
             "JOIN FETCH bp.process " +
-            "JOIN FETCH bp.projectPlanEntity " +
-            "WHERE bp.projectPlanEntity.planId = :planId")
+            "WHERE bp.planId = :planId")
     List<BlockPlanEntity> findByPlanIdWithJoins(@Param("planId") String planId);
-
 
 }
