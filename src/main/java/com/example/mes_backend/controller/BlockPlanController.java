@@ -74,11 +74,11 @@ public class BlockPlanController {
         return blockPlanService.getAllBlocks();
     }// ==================================================================
 
-    //  진행률 업데이트 (MES → API 서버 중계)
-    @PutMapping("/{planId}/progress")
-    public void updateProjectProgress(@PathVariable("planId") String planId) {
-        blockPlanService.updateProjectProgress(planId);
-    }
+//    //  진행률 업데이트 (MES → API 서버 중계)
+//    @PutMapping("/{planId}/progress")
+//    public void updateProjectProgress(@PathVariable("planId") String planId) {
+//        blockPlanService.updateProjectProgress(planId);
+//    }
 
 
 }
