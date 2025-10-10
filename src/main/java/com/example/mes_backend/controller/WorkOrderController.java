@@ -87,6 +87,12 @@ public class WorkOrderController {
     }
 
     // === 콤보박스 데이터 제공 ===
+
+    @GetMapping("/blockPlans")
+    public List<BlockPlanDto> getBlockPlans() {
+        return workOrderService.getAllBlockPlans();
+    }
+
     @GetMapping("/processes")
     public List<ProcessDto> getProcesses() {
         return workOrderService.getAllProcesses();
@@ -95,11 +101,6 @@ public class WorkOrderController {
     @GetMapping("/blocks")
     public List<BlockDto> getBlocks() {
         return workOrderService.getAllBlocks();
-    }
-
-    @GetMapping("/blockPlans")
-    public List<BlockPlanDto> getBlockPlans() {
-        return workOrderService.getAllBlockPlans();
     }
 
     @GetMapping("/workCenters")

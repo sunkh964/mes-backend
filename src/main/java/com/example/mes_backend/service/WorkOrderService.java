@@ -4,10 +4,12 @@ import com.example.mes_backend.dto.*;
 import com.example.mes_backend.entity.*;
 import com.example.mes_backend.repository.*;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -202,6 +204,16 @@ public class WorkOrderService {
 
 
     // ================= 콤보박스 =================
+
+
+    @Transactional(readOnly = true)
+    public List<BlockPlanDto> getAllBlockPlans() {
+        return blockPlanRepository.findAllWithJoins()
+                .stream()
+                .map(BlockPlanDto::fromEntity)
+                .toList();
+    }
+
     public List<ProcessDto> getAllProcesses() {
         return processRepository.findAll()
                 .stream()
@@ -216,12 +228,6 @@ public class WorkOrderService {
                 .toList();
     }
 
-    public List<BlockPlanDto> getAllBlockPlans() {
-        return blockPlanRepository.findAll()
-                .stream()
-                .map(BlockPlanDto::fromEntity)
-                .toList();
-    }
 
     public List<WorkCenterDto> getAllWorkCenters() {
         return workCenterRepository.findAll()
