@@ -502,7 +502,7 @@ public class MesDashboardService {
 
             int total = employees.size();
 
-            // ✅ status = 0 → 재직
+            // status = 0 → 재직
             long active = employees.stream()
                     .filter(e -> {
                         Object statusObj = e.get("status");
