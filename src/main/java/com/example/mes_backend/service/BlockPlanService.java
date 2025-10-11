@@ -5,6 +5,7 @@ import com.example.mes_backend.dto.BlockPlanDto;
 import com.example.mes_backend.dto.ProcessDto;
 import com.example.mes_backend.entity.*;
 import com.example.mes_backend.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Join;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,8 @@ public class BlockPlanService {
     private final ProcessRepository processRepository;
     private final BlockRepository blockRepository;
     private final WorkOrderRepository workOrderRepository;
+    private final ErpPlanReferenceRepository erpPlanReferenceRepository;
+
 
     private final RestTemplate restTemplate; // ✅ API 서버 호출용
     private final String API_SERVER_URL = "http://localhost:8083/api/proxy/project_plans";
@@ -72,7 +75,7 @@ public class BlockPlanService {
                 && (processId == null || processId.isBlank())
                 && startDate == null && endDate == null
                 && (status == null || status.isBlank())) {
-            return blockPlanRepository.findByPlanIdWithJoins(planId)
+            return blockPlanRepository.findByErpPlanReference_PlanIdWithJoins(planId) //
                     .stream()
                     .map(BlockPlanDto::fromEntity)
                     .toList();
@@ -97,7 +100,8 @@ public class BlockPlanService {
 
                     // 프로젝트 생산계획 ID (join 사용)
                     if (planId != null && !planId.isBlank()) {
-                        predicates.add(cb.equal(root.get("planId"), planId));
+                        // root.get("erpPlanReference")를 통해 연관 엔티티에 접근하고, 그 안의 planId 필드를 비교
+                        predicates.add(cb.equal(root.get("erpPlanReference").get("planId"), planId));
                     }
 
 //                    if (planId != null && !planId.isBlank()) {
@@ -130,11 +134,33 @@ public class BlockPlanService {
     // ========= 등록=========
     @Transactional
     public BlockPlanDto create(BlockPlanDto dto) {
-        // DTO → Entity (PK만 매핑된 연관 엔티티 포함)
-        BlockPlanEntity entity = dto.toEntity();
+        // 1. DTO에서 받은 planId로 erp_plan_references 테이블을 조회하여 엔티티를 찾습니다.
+        ErpPlanReference planRef = erpPlanReferenceRepository.findById(dto.getPlanId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "유효하지 않은 ERP 생산 계획 ID입니다. ID가 MES에 동기화되었는지 확인하세요: " + dto.getPlanId()
+                ));
 
-        // 저장
-        BlockPlanEntity saved = blockPlanRepository.save(entity);
+        // 2. 다른 연관 엔티티들도 조회합니다.
+        ProcessEntity process = processRepository.findById(dto.getProcessId())
+                .orElseThrow(() -> new EntityNotFoundException("공정을 찾을 수 없습니다: " + dto.getProcessId()));
+        BlockEntity block = blockRepository.findById(dto.getBlockId())
+                .orElseThrow(() -> new EntityNotFoundException("블록을 찾을 수 없습니다: " + dto.getBlockId()));
+
+        // 3. 새로운 BlockPlanEntity를 생성하고 DTO의 값들을 채웁니다.
+        BlockPlanEntity newEntity = new BlockPlanEntity();
+        newEntity.setPlanQty(dto.getPlanQty());
+        newEntity.setStartDate(dto.getStartDate());
+        newEntity.setEndDate(dto.getEndDate());
+        newEntity.setStatus(dto.getStatus());
+        newEntity.setRemark(dto.getRemark());
+
+        // 4. 조회한 엔티티 '객체'들을 설정합니다. (String이 아님!)
+        newEntity.setErpPlanReference(planRef); // ✅ 여기가 핵심!
+        newEntity.setProcess(process);
+        newEntity.setBlockEntity(block);
+
+        // 5. 저장합니다. 이제 JPA가 올바른 외래 키 관계를 맺어줍니다.
+        BlockPlanEntity saved = blockPlanRepository.save(newEntity);
 
 //        // === WorkOrder 자동 생성 ===
 //        WorkOrderEntity wo = new WorkOrderEntity();
@@ -198,79 +224,78 @@ public class BlockPlanService {
 //                })
 //                .orElseThrow(() -> new IllegalArgumentException("수정할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId));
 //    }
-@Transactional
-public BlockPlanDto update(int blockPlanId, BlockPlanDto dto) {
-    return blockPlanRepository.findById(blockPlanId)
-            .map(entity -> {
-                try {
-                    // 연관 엔티티 조회
-                    ProcessEntity process = processRepository.findById(dto.getProcessId())
-                            .orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다: " + dto.getProcessId()));
+    @Transactional
+    public BlockPlanDto update(int blockPlanId, BlockPlanDto dto) {
+        return blockPlanRepository.findById(blockPlanId)
+                .map(entity -> {
+                    try {
+                        // 연관 엔티티 조회
+                        ProcessEntity process = processRepository.findById(dto.getProcessId())
+                                .orElseThrow(() -> new IllegalArgumentException("공정이 존재하지 않습니다: " + dto.getProcessId()));
 
-                    BlockEntity block = blockRepository.findById(dto.getBlockId())
-                            .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다: " + dto.getBlockId()));
+                        BlockEntity block = blockRepository.findById(dto.getBlockId())
+                                .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다: " + dto.getBlockId()));
 
-                    // 연관 엔티티 세팅
-                    entity.setProcess(process);
-                    entity.setBlockEntity(block);
+                        // 연관 엔티티 세팅
+                        entity.setProcess(process);
+                        entity.setBlockEntity(block);
 
-                    // 일반 필드 세팅
-                    entity.setPlanId(dto.getPlanId());
-                    entity.setPlanQty(dto.getPlanQty());
-                    entity.setStatus(dto.getStatus());
-                    entity.setStartDate(dto.getStartDate());
-                    entity.setEndDate(dto.getEndDate());
-                    entity.setRemark(dto.getRemark());
+                        // 일반 필드 세팅
+                        entity.setPlanQty(dto.getPlanQty());
+                        entity.setStatus(dto.getStatus());
+                        entity.setStartDate(dto.getStartDate());
+                        entity.setEndDate(dto.getEndDate());
+                        entity.setRemark(dto.getRemark());
 
-                    // 저장
-                    BlockPlanEntity saved = blockPlanRepository.save(entity);
+                        // 저장
+                        BlockPlanEntity saved = blockPlanRepository.save(entity);
 
-                    // ===================== 진행률 업데이트 =====================
-                    List<BlockPlanEntity> blocks = blockPlanRepository.findByPlanIdWithJoins(dto.getPlanId());
+                        // ===================== 진행률 업데이트 =====================
+                        List<BlockPlanEntity> blocks = blockPlanRepository.findByErpPlanReference_PlanIdWithJoins(dto.getPlanId());
 
-                    if (!blocks.isEmpty()) {
-                        long completed = blocks.stream()
-                                .filter(bp -> bp.getStatus() != null && bp.getStatus() == 2) // 2 = 완료
-                                .count();
+                        if (!blocks.isEmpty()) {
+                            long completed = blocks.stream()
+                                    .filter(bp -> bp.getStatus() != null && bp.getStatus() == 2) // 2 = 완료
+                                    .count();
 
-                        BigDecimal progressRate = BigDecimal.valueOf(completed * 100.0 / blocks.size())
-                                .setScale(2, RoundingMode.HALF_UP);
+                            BigDecimal progressRate = BigDecimal.valueOf(completed * 100.0 / blocks.size())
+                                    .setScale(2, RoundingMode.HALF_UP);
 
-                        log.info("[MES] ProjectPlan({}) 진행률 계산됨 = {}%", dto.getPlanId(), progressRate);
+                            log.info("[MES] ProjectPlan({}) 진행률 계산됨 = {}%", dto.getPlanId(), progressRate);
 
-                        try {
-                            HttpHeaders headers = new HttpHeaders();
-                            headers.setContentType(MediaType.APPLICATION_JSON);
+                            try {
+                                HttpHeaders headers = new HttpHeaders();
+                                headers.setContentType(MediaType.APPLICATION_JSON);
 
-                            // Body에 progressRate(BigDecimal) 담기
-                            HttpEntity<BigDecimal> entityReq = new HttpEntity<>(progressRate, headers);
+                                // Body에 progressRate(BigDecimal) 담기
+                                HttpEntity<BigDecimal> entityReq = new HttpEntity<>(progressRate, headers);
 
-                            // API 서버(8083)에 PUT 요청
-                            restTemplate.exchange(
-                                    API_SERVER_URL + "/" + dto.getPlanId() + "/progress",
-                                    HttpMethod.PUT,
-                                    entityReq,
-                                    Void.class
-                            );
+                                // API 서버(8083)에 PUT 요청
+                                restTemplate.exchange(
+                                        API_SERVER_URL + "/" + dto.getPlanId() + "/progress",
+                                        HttpMethod.PUT,
+                                        entityReq,
+                                        Void.class
+                                );
 
-                            log.info("API 서버로 진행률 {}% 업데이트 성공", progressRate);
+                                log.info("API 서버로 진행률 {}% 업데이트 성공", progressRate);
 
-                        } catch (Exception e) {
-                            log.error("API 서버로 진행률 업데이트 요청 실패", e);
-                            throw new RuntimeException("API 서버로 진행률 업데이트 요청 실패", e);
+                            } catch (Exception e) {
+                                log.error("API 서버로 진행률 업데이트 요청 실패", e);
+                                throw new RuntimeException("API 서버로 진행률 업데이트 요청 실패", e);
+                            }
                         }
+                        // ==========================================================
+
+                        return BlockPlanDto.fromEntity(saved);
+
+                    } catch (Exception e) {
+                        log.error("BlockPlan 업데이트 중 오류 발생", e);
+                        throw e;
                     }
-                    // ==========================================================
-
-                    return BlockPlanDto.fromEntity(saved);
-
-                } catch (Exception e) {
-                    log.error("BlockPlan 업데이트 중 오류 발생", e);
-                    throw e;
-                }
-            })
-            .orElseThrow(() -> new IllegalArgumentException("수정할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId));
-}
+                })
+                .orElseThrow(() -> new IllegalArgumentException("수정할 블록 생산 계획이 존재하지 않습니다: " + blockPlanId));
+    }
 
 
 

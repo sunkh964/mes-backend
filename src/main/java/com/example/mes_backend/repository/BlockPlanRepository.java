@@ -15,10 +15,10 @@ public interface BlockPlanRepository
 
     // PlanId로 조회
     @Query("SELECT bp FROM BlockPlanEntity bp " +
-            "JOIN FETCH bp.blockEntity " +
             "JOIN FETCH bp.process " +
-            "WHERE bp.planId = :planId")
-    List<BlockPlanEntity> findByPlanIdWithJoins(@Param("planId") String planId);
+            "JOIN FETCH bp.blockEntity " +
+            "WHERE bp.erpPlanReference.planId = :planId")
+    List<BlockPlanEntity> findByErpPlanReference_PlanIdWithJoins(@Param("planId") String planId);
 
     // 전체 조회 시 Lazy 문제 방지용 fetch join 추가
     @Query("SELECT bp FROM BlockPlanEntity bp " +

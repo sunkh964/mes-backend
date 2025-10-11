@@ -25,8 +25,12 @@ public class BlockPlanEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "plan_id")
 //    private ProjectPlanEntity projectPlanEntity;
-    @Column(name = "plan_id", length = 30)
-    private String planId;   // 단순 FK (ERP projectPlan plan_id 참조)
+//    @Column(name = "plan_id", length = 30)
+//    private String planId;   // 단순 FK (ERP projectPlan plan_id 참조)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id") // DB의 'plan_id' 컬럼을 외래 키로 사용합니다.
+    private ErpPlanReference erpPlanReference;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_id")

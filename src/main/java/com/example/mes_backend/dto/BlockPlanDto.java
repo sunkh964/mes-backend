@@ -40,6 +40,7 @@ public class BlockPlanDto {
     private LocalDateTime updatedAt;
 
     // DTO -> Entity
+    /*
     public BlockPlanEntity toEntity(){
         BlockPlanEntity blockPlanEntity = new BlockPlanEntity();
 
@@ -81,14 +82,16 @@ public class BlockPlanDto {
         blockPlanEntity.setUpdatedAt(this.updatedAt);
         return blockPlanEntity;
 
-    }
+    }*/
 
     // Entity → DTO 변환
     public static BlockPlanDto fromEntity(BlockPlanEntity entity) {
         BlockPlanDto dto = new BlockPlanDto();
 
         dto.setBlockPlanId(entity.getBlockPlanId());
-        dto.setPlanId(entity.getPlanId());
+        if (entity.getErpPlanReference() != null) {
+            dto.setPlanId(entity.getErpPlanReference().getPlanId());
+        }
 
         // Null-safe 처리
 //        if (entity.getVesselEntity() != null) {

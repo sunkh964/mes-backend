@@ -1,17 +1,20 @@
 package com.example.mes_backend;
 
+import com.example.mes_backend.config.SecurityConfig;
 import com.example.mes_backend.entity.Employee;
 import com.example.mes_backend.repository.EmployeeRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Date;
 
 @SpringBootApplication
+
 public class MesBackendApplication {
 
 

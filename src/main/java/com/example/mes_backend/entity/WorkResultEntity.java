@@ -46,7 +46,7 @@ public class WorkResultEntity {
     private EquipmentEntity equipment;
 
     @Column(name = "status")
-    private String status = "in_progress";
+    private String status = "in_progress";  // in_progress, complete, pause
 
     @Column(name = "remark", length = 255)
     private String remark;
